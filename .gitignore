@@ -1,0 +1,7 @@
+node_modules
+dist
+data/*.json
+anthony-dellapia-life-dashboard-v*.html
+*.plain.json
+.env*
+.DS_Store
