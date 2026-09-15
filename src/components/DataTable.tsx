@@ -7,8 +7,10 @@ export interface Column<T> {
 }
 
 /**
- * Generic table that collapses to stacked cards under 640px via CSS
- * (data-label attributes drive the mobile layout - see global.css).
+ * Generic table. Under 640px it collapses via CSS: a table of up to 3
+ * columns becomes a compact list (name left, value right, the middle column
+ * as a second line), anything wider becomes labelled stacked cards
+ * (data-label attributes drive that layout - see global.css).
  */
 export function DataTable<T>({
   columns,
@@ -23,7 +25,7 @@ export function DataTable<T>({
 }) {
   if (!rows || rows.length === 0) return <EmptyState label={emptyLabel} />;
   return (
-    <div className="table-wrap">
+    <div className={columns.length <= 3 ? 'table-wrap compact' : 'table-wrap'}>
       <table>
         <thead>
           <tr>

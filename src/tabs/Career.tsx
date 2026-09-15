@@ -38,10 +38,7 @@ export function Career({ data }: { data: CareerData | undefined }) {
   const labels = data?.labels ?? {};
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>{data?.title ?? 'Career'}</h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="Nothing here yet." />

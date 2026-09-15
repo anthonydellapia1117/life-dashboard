@@ -1,3 +1,4 @@
+import { formatWeekdayMonthDayISO } from '../lib/date';
 import type { FinancesData, OpenItemRow, PaymentRow, SubscriptionRow } from '../types';
 import { Card, EmptyState, InfoBox, Pill, SectionLabel } from '../components/ui';
 import { DataTable, type Column } from '../components/DataTable';
@@ -16,7 +17,7 @@ const paymentColumns: Column<PaymentRow>[] = [
     ),
   },
   { key: 'amount', header: 'Amount', render: (p) => <span className="amount">{p.amount !== undefined ? currency.format(p.amount) : 'TBD'}</span> },
-  { key: 'due', header: 'Due', render: (p) => <span className="mono">{p.due}</span> },
+  { key: 'due', header: 'Due', render: (p) => <span className="mono">{formatWeekdayMonthDayISO(p.due)}</span> },
 ];
 
 const subscriptionColumns: Column<SubscriptionRow>[] = [
@@ -41,12 +42,7 @@ const openItemColumns: Column<OpenItemRow>[] = [
 export function Finances({ data }: { data: FinancesData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          Finances <span className="accent">&amp; Admin</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No finance data yet." />

@@ -25,12 +25,7 @@ const newsletterColumns: Column<NewsletterRow>[] = [
 export function Ayvede({ data }: { data: AyvedeData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          Ayvede <span className="accent">Business</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No Ayvede data yet." />

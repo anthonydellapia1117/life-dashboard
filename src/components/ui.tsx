@@ -1,4 +1,14 @@
-import type { PillTone, Severity } from '../types';
+import type { PillTone } from '../types';
+import { StatusIcon, type StatusTone } from './StatusIcon';
+
+/** Which reserved status colour (if any) a pill tone carries - see global.css. */
+const PILL_STATUS: Record<PillTone, StatusTone | undefined> = {
+  live: 'good',
+  due: 'critical',
+  soon: 'warning',
+  done: undefined,
+  watch: undefined,
+};
 
 export function Card({
   title,
@@ -21,11 +31,13 @@ export function Card({
 }
 
 export function Pill({ tone, children }: { tone: PillTone; children: React.ReactNode }) {
-  return <span className={`pill pill-${tone}`}>{children}</span>;
-}
-
-export function SeverityDot({ severity }: { severity: Severity }) {
-  return <span className={`alert-dot alert-dot-${severity}`} aria-hidden="true" />;
+  const status = PILL_STATUS[tone];
+  return (
+    <span className={`pill pill-${tone}`}>
+      {status ? <StatusIcon tone={status} /> : null}
+      {children}
+    </span>
+  );
 }
 
 export function InfoBox({ children }: { children: React.ReactNode }) {

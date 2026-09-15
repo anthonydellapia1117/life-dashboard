@@ -1,3 +1,4 @@
+import { formatWeekdayMonthDayISO } from '../lib/date';
 import type { FamilyData, FamilyRow, TripRow } from '../types';
 import { Card, EmptyState, InfoBox, Pill, SectionLabel } from '../components/ui';
 import { DataTable, type Column } from '../components/DataTable';
@@ -14,7 +15,7 @@ const familyRowColumns: Column<FamilyRow>[] = [
       </>
     ),
   },
-  { key: 'date', header: 'Date', render: (r) => <span className="mono">{r.date}</span> },
+  { key: 'date', header: 'Date', render: (r) => <span className="mono">{formatWeekdayMonthDayISO(r.date)}</span> },
   { key: 'status', header: 'Status', render: (r) => <Pill tone={r.pill}>{r.status}</Pill> },
 ];
 
@@ -26,12 +27,7 @@ const tripColumns: Column<TripRow>[] = [
 export function Family({ data }: { data: FamilyData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          Family &amp; <span className="accent">Personal</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No family data yet." />
@@ -50,7 +46,7 @@ export function Family({ data }: { data: FamilyData | undefined }) {
 
           <SectionLabel>Personal Health &amp; Milestones</SectionLabel>
           <div className="grid cols-2">
-            <Card title="Anthony's Health">
+            <Card title="Health">
               <DataTable columns={familyRowColumns} rows={data.health} getRowId={(r) => r.id} />
               {data.healthNote ? <InfoBox>{data.healthNote}</InfoBox> : null}
             </Card>

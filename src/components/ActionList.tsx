@@ -1,5 +1,8 @@
 import type { ActionItem, Horizon } from '../types';
 import { EmptyState } from './ui';
+import { StatusIcon, type StatusTone } from './StatusIcon';
+
+const GROUP_TONE: Partial<Record<Horizon, StatusTone>> = { now: 'critical', week: 'warning' };
 
 const GROUP_ORDER: Horizon[] = ['now', 'week', 'later', 'routine'];
 const GROUP_LABELS: Record<Horizon, string> = {
@@ -21,7 +24,10 @@ export function ActionList({ actions }: { actions: ActionItem[] | undefined }) {
     <div className="action-groups">
       {groups.map((group) => (
         <div className="action-group" key={group.horizon}>
-          <div className={`action-group-label action-group-label-${group.horizon}`}>{GROUP_LABELS[group.horizon]}</div>
+          <div className="action-group-label">
+            {GROUP_TONE[group.horizon] ? <StatusIcon tone={GROUP_TONE[group.horizon]!} /> : null}
+            {GROUP_LABELS[group.horizon]}
+          </div>
           {group.items.map((action) => (
             <div className="action-item" key={action.id}>
               <div className={`action-check action-check-${group.horizon}`} aria-hidden="true" />

@@ -1,3 +1,4 @@
+import { formatWeekdayMonthDayISO } from '../lib/date';
 import type { WorkData } from '../types';
 import { Card, EmptyState, InfoBox, Pill, SectionLabel } from '../components/ui';
 import { DataTable, type Column } from '../components/DataTable';
@@ -15,7 +16,7 @@ const milestoneColumns: Column<Milestone>[] = [
       </>
     ),
   },
-  { key: 'due', header: 'Due', render: (m) => <span className="mono">{m.due}</span> },
+  { key: 'due', header: 'Due', render: (m) => <span className="mono">{formatWeekdayMonthDayISO(m.due)}</span> },
   { key: 'status', header: 'Status', render: (m) => <Pill tone={m.pill}>{m.status}</Pill> },
 ];
 
@@ -37,10 +38,7 @@ const completedColumns: Column<CompletedEngagement>[] = [
 export function Work({ data }: { data: WorkData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>{data?.title ?? 'Work'}</h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No work data yet." />
@@ -61,7 +59,7 @@ export function Work({ data }: { data: WorkData | undefined }) {
                 <strong>Scope:</strong> {data.engagement.scope}
               </InfoBox>
             </Card>
-            <Card title="Work Action Items" badge="GT">
+            <Card title="Action items">
               <ActionList actions={data.actionItems} />
             </Card>
           </div>

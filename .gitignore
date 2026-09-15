@@ -5,3 +5,4 @@ anthony-dellapia-life-dashboard-v*.html
 *.plain.json
 .env*
 .DS_Store
+data/*.txt

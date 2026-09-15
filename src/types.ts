@@ -176,6 +176,7 @@ export interface Contact {
 }
 
 export interface UnicoData {
+  title?: string;
   summary: string;
   kpis: Kpi[];
   accounts: Account[];
@@ -212,6 +213,7 @@ export interface RepoStatus {
 }
 
 export interface ProjectsData {
+  title?: string;
   summary: string;
   cards: ProjectCard[];
   sportsCards: ProjectCard[];
@@ -236,6 +238,7 @@ export interface NewsletterRow {
 }
 
 export interface AyvedeData {
+  title?: string;
   summary: string;
   alerts: Alert[];
   status: StatusRow[];
@@ -262,6 +265,7 @@ export interface TripRow {
 }
 
 export interface FamilyData {
+  title?: string;
   summary: string;
   child: FamilyRow[];
   childNote?: string;
@@ -299,6 +303,7 @@ export interface OpenItemRow {
 }
 
 export interface FinancesData {
+  title?: string;
   summary: string;
   recurring: PaymentRow[];
   subscriptions: SubscriptionRow[];
@@ -331,6 +336,7 @@ export interface StackComponentRow {
 }
 
 export interface AiStackData {
+  title?: string;
   summary: string;
   active: ToolRow[];
   removed: RemovedToolRow[];
@@ -356,28 +362,5 @@ export interface LifeData {
   aiStack?: AiStackData;
 }
 
-export const TAB_IDS = [
-  'overview',
-  'work',
-  'career',
-  'unico',
-  'projects',
-  'ayvede',
-  'family',
-  'finances',
-  'ai-stack',
-] as const;
-
-export type TabId = (typeof TAB_IDS)[number];
-
-export const TAB_LABELS: Record<TabId, string> = {
-  overview: 'Overview',
-  work: 'Work',
-  career: 'Career',
-  unico: 'UNICO',
-  projects: 'Projects',
-  ayvede: 'Ayvede',
-  family: 'Family',
-  finances: 'Finances',
-  'ai-stack': 'AI Stack',
-};
+// Zone/section IA (routing, labels, legacy-hash map) lives in
+// src/lib/routing.ts - this file stays the data schema only.

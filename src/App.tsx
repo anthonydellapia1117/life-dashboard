@@ -2,50 +2,64 @@ import { useEffect, useState } from 'react';
 import type { SealedBlob } from './crypto';
 import { WrongPassphraseError, decryptWithKey, unlockWithPassphrase } from './crypto';
 import { clearRememberedKeys, loadRememberedKey, storeRememberedKey } from './idb';
-import { TAB_IDS, type LifeData, type TabId } from './types';
+import type { LifeData } from './types';
+import {
+  ZONE_LABELS,
+  SECTIONS_BY_ZONE,
+  SECTION_LABELS,
+  parseHash,
+  routeToHash,
+  type ZoneId,
+  type Route,
+  type SectionId,
+} from './lib/routing';
 import { Header } from './components/Header';
-import { TabBar } from './components/TabBar';
+import { NavBar } from './components/NavBar';
+import { SegmentedControl } from './components/SegmentedControl';
 import { Unlock } from './components/Unlock';
-import { Overview } from './tabs/Overview';
+import { Today } from './tabs/Today';
 import { Work } from './tabs/Work';
 import { Career } from './tabs/Career';
-import { Unico } from './tabs/Unico';
-import { Projects } from './tabs/Projects';
 import { Ayvede } from './tabs/Ayvede';
 import { Family } from './tabs/Family';
 import { Finances } from './tabs/Finances';
+import { Unico } from './tabs/Unico';
+import { Projects } from './tabs/Projects';
 import { AiStack } from './tabs/AiStack';
 
 type Phase = 'loading' | 'error' | 'locked' | 'unlocked';
 
-function getTabFromHash(): TabId {
-  const raw = window.location.hash.replace(/^#/, '');
-  return (TAB_IDS as readonly string[]).includes(raw) ? (raw as TabId) : 'overview';
-}
-
-function renderTab(tab: TabId, data: LifeData) {
-  switch (tab) {
-    case 'overview':
-      return <Overview data={data} />;
-    case 'work':
+function renderRoute(route: Route, data: LifeData) {
+  if (route.zone === 'today') return <Today data={data} />;
+  switch (route.section) {
+    case 'engagement':
       return <Work data={data.work} />;
     case 'career':
       return <Career data={data.career} />;
-    case 'unico':
-      return <Unico data={data.unico} />;
-    case 'projects':
-      return <Projects data={data.projects} />;
-    case 'ayvede':
+    case 'business':
       return <Ayvede data={data.ayvede} />;
     case 'family':
       return <Family data={data.family} />;
     case 'finances':
       return <Finances data={data.finances} />;
+    case 'community':
+      return <Unico data={data.unico} />;
+    case 'projects':
+      return <Projects data={data.projects} />;
     case 'ai-stack':
       return <AiStack data={data.aiStack} />;
     default:
       return null;
   }
+}
+
+/** The active screen's heading: a data-carried title where one exists (Work/Career), else a neutral word. */
+function routeTitle(route: Route, data: LifeData | undefined): string {
+  if (route.zone === 'today') return ZONE_LABELS.today;
+  if (!route.section) return ZONE_LABELS[route.zone];
+  if (route.section === 'engagement') return data?.work?.title ?? SECTION_LABELS.engagement;
+  if (route.section === 'career') return data?.career?.title ?? SECTION_LABELS.career;
+  return SECTION_LABELS[route.section];
 }
 
 export default function App() {
@@ -55,15 +69,24 @@ export default function App() {
   const [fetchError, setFetchError] = useState<string | undefined>();
   const [unlockError, setUnlockError] = useState<string | undefined>();
   const [unlocking, setUnlocking] = useState(false);
-  const [tab, setTab] = useState<TabId>(() => getTabFromHash());
+  const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
 
   useEffect(() => {
     function onHashChange() {
-      setTab(getTabFromHash());
+      setRoute(parseHash(window.location.hash));
     }
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useEffect(() => {
+    // Keep the address bar canonical (a legacy hash like "#work" becomes
+    // "#work/engagement") without adding a history entry or re-firing hashchange.
+    const canonical = routeToHash(route);
+    if (window.location.hash !== canonical) {
+      window.history.replaceState(null, '', canonical);
+    }
+  }, [route]);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,11 +129,13 @@ export default function App() {
     };
   }, []);
 
-  function changeTab(id: TabId) {
-    setTab(id);
-    if (window.location.hash !== `#${id}`) {
-      window.location.hash = id;
-    }
+  function goToZone(id: ZoneId) {
+    const sections = SECTIONS_BY_ZONE[id];
+    setRoute(sections.length > 0 ? { zone: id, section: sections[0] } : { zone: id });
+  }
+
+  function goToSection(section: SectionId) {
+    setRoute((prev) => ({ zone: prev.zone, section }));
   }
 
   async function handleUnlock(passphrase: string, remember: boolean) {
@@ -142,22 +167,35 @@ export default function App() {
     setUnlockError(undefined);
   }
 
+  const sections = SECTIONS_BY_ZONE[route.zone];
+  const title = routeTitle(route, data);
+
   return (
     <div className="app-shell">
-      <div className="app-topbar">
-        <Header asOf={data?.meta.asOf} unlocked={phase === 'unlocked'} onLock={handleLock} />
-        {phase === 'unlocked' ? <TabBar active={tab} onChange={changeTab} /> : null}
+      {phase === 'unlocked' ? <NavBar active={route.zone} onChange={goToZone} /> : null}
+      <div className="app-body">
+        <div className="app-topbar">
+          <Header title={title} asOf={data?.meta.asOf} unlocked={phase === 'unlocked'} onLock={handleLock} />
+          {phase === 'unlocked' && sections.length > 0 && route.section ? (
+            <SegmentedControl
+              ariaLabel={`${ZONE_LABELS[route.zone]} sections`}
+              options={sections.map((id) => ({ id, label: SECTION_LABELS[id] }))}
+              active={route.section}
+              onChange={goToSection}
+            />
+          ) : null}
+        </div>
+        <main className="app-main">
+          {phase === 'loading' ? <div className="status-message">Loading...</div> : null}
+          {phase === 'error' ? <div className="status-message status-error">{fetchError}</div> : null}
+          {phase === 'locked' ? <Unlock onUnlock={handleUnlock} error={unlockError} busy={unlocking} /> : null}
+          {phase === 'unlocked' && data ? (
+            <div id={`panel-${route.zone}${route.section ? `-${route.section}` : ''}`}>
+              {renderRoute(route, data)}
+            </div>
+          ) : null}
+        </main>
       </div>
-      <main className="app-main">
-        {phase === 'loading' ? <div className="status-message">Loading...</div> : null}
-        {phase === 'error' ? <div className="status-message status-error">{fetchError}</div> : null}
-        {phase === 'locked' ? <Unlock onUnlock={handleUnlock} error={unlockError} busy={unlocking} /> : null}
-        {phase === 'unlocked' && data ? (
-          <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`}>
-            {renderTab(tab, data)}
-          </div>
-        ) : null}
-      </main>
     </div>
   );
 }

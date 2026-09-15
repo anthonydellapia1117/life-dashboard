@@ -31,12 +31,7 @@ const stackColumns: Column<StackComponentRow>[] = [
 export function AiStack({ data }: { data: AiStackData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          AI <span className="accent">Tool Stack</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No AI stack data yet." />

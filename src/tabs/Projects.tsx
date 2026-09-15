@@ -12,12 +12,7 @@ const repoColumns: Column<RepoStatus>[] = [
 export function Projects({ data }: { data: ProjectsData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          Personal <span className="accent">Projects</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No project data yet." />

@@ -26,12 +26,7 @@ const contactColumns: Column<Contact>[] = [
 export function Unico({ data }: { data: UnicoData | undefined }) {
   return (
     <div className="tab-page">
-      <div className="page-header">
-        <h1>
-          UNICO <span className="accent">Treasurer</span>
-        </h1>
-        {data?.summary ? <div className="page-sub">{data.summary}</div> : null}
-      </div>
+      {data?.summary ? <p className="section-summary">{data.summary}</p> : null}
 
       {!data ? (
         <EmptyState label="No UNICO data yet." />

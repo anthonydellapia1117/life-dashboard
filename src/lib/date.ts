@@ -52,6 +52,19 @@ const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** "Tue, Sep 15" style label for a Date - used by the Header for "today". */
+export function formatWeekdayMonthDay(d: Date): string {
+  return `${WEEKDAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+
+/** Same "Wed, Sep 16" label, but from a "YYYY-MM-DD" date string. */
+export function formatWeekdayMonthDayISO(iso: string): string {
+  const d = parseDateOnly(iso);
+  return d ? formatWeekdayMonthDay(d) : iso;
+}
+
 /** "Sep 18, 2026" style label for a YYYY-MM-DD date. */
 export function formatDate(iso: string): string {
   const d = parseDateOnly(iso);

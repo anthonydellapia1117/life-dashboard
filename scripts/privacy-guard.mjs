@@ -108,6 +108,22 @@ function isSafeValue(value) {
   return SAFE_VALUES.has(value.trim().toLowerCase());
 }
 
+/**
+ * Optional local list of extra terms to block, one per line, in
+ * data/guard-terms.txt (gitignored like data/*.json - the list itself would
+ * leak what it guards). For values too short for the >= 5 character scan,
+ * such as an employer's initials. Matched as whole words, case-sensitive.
+ */
+export function readExtraTerms(root) {
+  const p = path.join(root, 'data', 'guard-terms.txt');
+  if (!fs.existsSync(p)) return [];
+  return fs
+    .readFileSync(p, 'utf8')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter((s) => s && !s.startsWith('#'));
+}
+
 export function shortHash(value) {
   return createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 12);
 }
@@ -230,8 +246,30 @@ export function runGuard(root = defaultRoot) {
     }
   }
 
+  // Short terms from the local data/guard-terms.txt, as whole words, case-sensitive,
+  // in the repo's own files (not dist: minified identifiers are arbitrary letters).
+  const extraTerms = readExtraTerms(root);
+  if (extraTerms.length > 0) {
+    const escape = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const patterns = extraTerms.map((t) => ({ term: t, re: new RegExp(`(?<![A-Za-z0-9])${escape(t)}(?![A-Za-z0-9])`) }));
+    for (const relPath of candidateFiles.filter((p) => !EXCLUDED_BASENAMES.has(path.basename(p)))) {
+      let content;
+      try {
+        content = fs.readFileSync(path.join(root, relPath), 'utf8');
+      } catch {
+        continue;
+      }
+      for (const { term, re } of patterns) {
+        if (re.test(content)) {
+          failed = true;
+          messages.push(`privacy-guard: FAIL - local guard term found in ${relPath} (term sha256:${shortHash(term)})`);
+        }
+      }
+    }
+  }
+
   if (!failed) {
-    messages.push(`privacy-guard: OK - ${filesToScan.length} file(s) scanned, ${sensitiveValues.length} sensitive value(s) checked, 0 hits.`);
+    messages.push(`privacy-guard: OK - ${filesToScan.length} file(s) scanned, ${sensitiveValues.length} sensitive value(s) and ${extraTerms.length} local term(s) checked, 0 hits.`);
   }
 
   return { failed, messages, filesScanned: filesToScan.length, valuesChecked: sensitiveValues.length };
