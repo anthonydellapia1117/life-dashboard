@@ -1,4 +1,5 @@
 import { ZONE_IDS, ZONE_LABELS, type ZoneId } from '../lib/routing';
+import { NavIcon } from './NavIcons';
 
 /**
  * The 4 top-level zones (Hick's law). Fitts's law: a bottom bar within
@@ -17,7 +18,8 @@ export function NavBar({ active, onChange }: { active: ZoneId; onChange: (id: Zo
           className={`nav-item${active === id ? ' active' : ''}`}
           onClick={() => onChange(id)}
         >
-          {ZONE_LABELS[id]}
+          <NavIcon zone={id} />
+          <span>{ZONE_LABELS[id]}</span>
         </button>
       ))}
     </nav>

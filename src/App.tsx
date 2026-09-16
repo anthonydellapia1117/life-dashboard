@@ -29,8 +29,8 @@ import { AiStack } from './tabs/AiStack';
 
 type Phase = 'loading' | 'error' | 'locked' | 'unlocked';
 
-function renderRoute(route: Route, data: LifeData) {
-  if (route.zone === 'today') return <Today data={data} />;
+function renderRoute(route: Route, data: LifeData, cryptoKey: CryptoKey | undefined, salt: string) {
+  if (route.zone === 'today') return <Today data={data} cryptoKey={cryptoKey} salt={salt} />;
   switch (route.section) {
     case 'engagement':
       return <Work data={data.work} />;
@@ -66,6 +66,10 @@ export default function App() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [blob, setBlob] = useState<SealedBlob | undefined>();
   const [data, setData] = useState<LifeData | undefined>();
+  // Kept in state (not just used transiently to decrypt) so Today's Capture
+  // card can encrypt/decrypt notes for as long as the app stays unlocked;
+  // handleLock below clears it and the capture list disappears with it.
+  const [cryptoKey, setCryptoKey] = useState<CryptoKey | undefined>();
   const [fetchError, setFetchError] = useState<string | undefined>();
   const [unlockError, setUnlockError] = useState<string | undefined>();
   const [unlocking, setUnlocking] = useState(false);
@@ -106,6 +110,7 @@ export default function App() {
             const decrypted = await decryptWithKey(parsedBlob, stored);
             if (!cancelled) {
               setData(decrypted as LifeData);
+              setCryptoKey(stored);
               setPhase('unlocked');
               return;
             }
@@ -145,6 +150,7 @@ export default function App() {
     try {
       const { key, data: decrypted } = await unlockWithPassphrase(blob, passphrase, false);
       setData(decrypted as LifeData);
+      setCryptoKey(key);
       setPhase('unlocked');
       if (remember) {
         await storeRememberedKey(blob.salt, key).catch(() => {
@@ -163,6 +169,7 @@ export default function App() {
       // Best effort - still lock the UI even if IndexedDB is unavailable.
     });
     setData(undefined);
+    setCryptoKey(undefined);
     setPhase('locked');
     setUnlockError(undefined);
   }
@@ -191,7 +198,7 @@ export default function App() {
           {phase === 'locked' ? <Unlock onUnlock={handleUnlock} error={unlockError} busy={unlocking} /> : null}
           {phase === 'unlocked' && data ? (
             <div id={`panel-${route.zone}${route.section ? `-${route.section}` : ''}`}>
-              {renderRoute(route, data)}
+              {renderRoute(route, data, cryptoKey, blob?.salt ?? '')}
             </div>
           ) : null}
         </main>

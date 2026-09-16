@@ -28,6 +28,8 @@ export interface Meta {
   generatedBy: string;
   /** Data sources feeding the snapshot, e.g. "Google Calendar", "Gmail". */
   sources: string[];
+  /** Mailto target for "Send to inbox" on Today's Capture card. Never hardcoded in source - the button hides without it. */
+  captureEmail?: string;
 }
 
 export interface Kpi {

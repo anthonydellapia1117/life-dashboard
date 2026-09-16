@@ -80,3 +80,18 @@ export function formatDateTime(iso: string): string {
   const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   return `${datePart}, ${timePart}`;
 }
+
+/** "Just now" / "5m ago" / "2h ago" / "3d ago", falling back to an absolute date past a week - for Today's capture list. */
+export function formatRelativeTime(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return iso;
+  const diffSec = Math.max(0, Math.round((now.getTime() - then.getTime()) / 1000));
+  if (diffSec < 60) return 'Just now';
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHour = Math.round(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}h ago`;
+  const diffDay = Math.round(diffHour / 24);
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return formatDate(iso);
+}

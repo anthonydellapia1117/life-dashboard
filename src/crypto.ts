@@ -19,6 +19,9 @@ export interface SealedBlob {
   sealedAt: string;
 }
 
+/** The iv/ct pair encryptWithKey produces - the same shape decryptWithKey reads out of a full SealedBlob. */
+export type EncryptedPayload = Pick<SealedBlob, 'iv' | 'ct'>;
+
 export class WrongPassphraseError extends Error {
   constructor() {
     super('That passphrase did not unlock the data.');
@@ -54,7 +57,9 @@ export function bytesToBase64(bytes: Uint8Array): string {
 /**
  * Derive the AES-256-GCM key for a sealed blob. The key is non-extractable
  * by default so a "remembered" key stored in IndexedDB can be used to
- * decrypt but never read back out as raw bytes.
+ * encrypt/decrypt but never read back out as raw bytes. Both usages are
+ * derived onto the one key so the same unlocked key that decrypts the data
+ * blob can also encrypt/decrypt Today's captures (src/lib/captures.ts).
  */
 export async function deriveKey(
   passphrase: string,
@@ -75,12 +80,16 @@ export async function deriveKey(
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
     extractable,
-    ['decrypt'],
+    ['decrypt', 'encrypt'],
   );
 }
 
-/** Decrypt a sealed blob with an already-derived key. Throws WrongPassphraseError on failure. */
-export async function decryptWithKey(blob: SealedBlob, key: CryptoKey): Promise<unknown> {
+/**
+ * Decrypt a sealed blob - or any {iv, ct} payload from encryptWithKey, such
+ * as one capture note - with an already-derived key. Throws
+ * WrongPassphraseError on failure.
+ */
+export async function decryptWithKey(blob: EncryptedPayload, key: CryptoKey): Promise<unknown> {
   const subtle = getSubtle();
   const iv = base64ToBytes(blob.iv);
   const ct = base64ToBytes(blob.ct);
@@ -93,6 +102,19 @@ export async function decryptWithKey(blob: SealedBlob, key: CryptoKey): Promise<
     // here. Never surface the underlying stack trace to the UI.
     throw new WrongPassphraseError();
   }
+}
+
+/**
+ * Encrypt an arbitrary JSON-serializable value with an already-derived key -
+ * mirrors decryptWithKey's approach (base64 through the same helpers, same
+ * AES-256-GCM primitive), with a fresh random 12-byte IV every call.
+ */
+export async function encryptWithKey(key: CryptoKey, value: unknown): Promise<EncryptedPayload> {
+  const subtle = getSubtle();
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(JSON.stringify(value));
+  const ctBuf = await subtle.encrypt({ name: 'AES-GCM', iv: iv as BufferSource }, key, plaintext);
+  return { iv: bytesToBase64(iv), ct: bytesToBase64(new Uint8Array(ctBuf)) };
 }
 
 /** Derive a key from a passphrase and use it to decrypt the blob in one step. */

@@ -24,16 +24,18 @@ lines).
 **Spacing** - base unit 4px: `--space-1..16` = 4, 8, 12, 16, 24, 32, 48, 64px
 (x1,2,3,4,6,8,12,16). Nothing off-scale.
 
-**Type** - modular scale, ratio 1.25 on 16px, line heights on the 4px grid:
+**Type** - modular scale, ratio 1.25 on 16px, line heights on the 4px grid.
+Tokens are rem (16px root), not px, so iOS text-size settings scale the
+whole app; spacing tokens (section above) stay px:
 
 | Token | Size | Line height |
 | --- | --- | --- |
-| xs | 12.8px | 16px |
-| base | 16px | 24px |
-| md | 20px | 28px |
-| lg | 25px | 32px |
-| xl | 31.25px | 40px |
-| hero | 48.83px | 56px |
+| xs | 0.8rem (12.8px) | 1rem (16px) |
+| base | 1rem (16px) | 1.5rem (24px) |
+| md | 1.25rem (20px) | 1.75rem (28px) |
+| lg | 1.5625rem (25px) | 2rem (32px) |
+| xl | 1.953rem (31.25px) | 2.5rem (40px) |
+| hero | 3.052rem (48.83px) | 3.5rem (56px) |
 
 One typeface: `ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
 Roboto, "Helvetica Neue", Arial, sans-serif`. Fraunces, JetBrains Mono, and
@@ -210,3 +212,27 @@ confirmed to fail the right test, then restored (see report).
   actual content patterns (2-up cards, stat tiles, the Today golden split)
   already cover every layout this app needs; noted here so it reads as a
   deliberate simplification, not an oversight.
+
+## 8. Home-screen app (manifest, service worker)
+
+- `index.html` - viewport carries `viewport-fit=cover`; `apple-mobile-web-app-capable`/`mobile-web-app-capable`, status-bar-style `black-translucent`, title "AVD Life"; `theme-color` for light/dark via two media-query meta tags matching the `--bg` tokens; `manifest.webmanifest`, `apple-touch-icon` (180), `icon` (192) links. Every new href is relative (no leading slash) - the site is served under `/life-dashboard/`, and Vite's own `/src/main.tsx` entry tag is rewritten to that base separately at build time.
+- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#f5f6f8), icons 192/512/maskable-512 (already in `public/icons/`).
+- `public/sw.js` - install (`skipWaiting` + a best-effort shell precache), activate (`clients.claim` + delete every cache but the current one), fetch (same-origin GET only - navigations and `data/life.enc.json` are network-first with a cache fallback; every other same-origin asset is stale-while-revalidate; cross-origin and non-GET requests are never touched, `respondWith` is simply not called for them).
+- Cache name is `` life-dashboard-${BUILD_ID} ``. `public/` is copied to `dist/` verbatim by Vite (public files are never run through esbuild/rollup, so a literal `define` substitution can't reach them) - `vite.config.ts` derives one `buildId` (`Date.now().toString(36)`), exposes it as a real `define: { __SW_BUILD_ID__ }` entry, and a small `closeBundle` plugin finds/replaces that same token in the already-copied `dist/sw.js`. Documented here so the two-step mechanism reads as a deliberate consequence of how publicDir copying works, not an oversight.
+- `src/main.tsx` registers `` `${BASE_URL}sw.js` `` only under `import.meta.env.PROD`, guarded by `typeof window !== 'undefined'` and `'serviceWorker' in navigator` - inert under Vitest's Node test environment even without the explicit guard.
+
+## 9. iPhone layout
+
+- Safe areas: header padding-top, nav padding-bottom, and the header/segmented-control/main side padding all use `max(token, env(safe-area-inset-*))`; the nav bar's height and its own padding-bottom share one identical expression so they can't drift apart. `@media (display-mode: standalone)` adds a little extra top room once Safari's own chrome is gone (added-to-home-screen only).
+- Nav: one 20px stroke-1.5 `currentColor` icon (sun / briefcase / heart / code-brackets for Today / Work / Life / Build) above each label; `.nav-item` is now a column. Unchanged 56px targets and active-accent color - icons recolor for free via `currentColor`.
+- Touch: `-webkit-tap-highlight-color: transparent` + `touch-action: manipulation` + a visible `:active` (opacity 0.6, no transform, so `prefers-reduced-motion` just zeroes the transition) on every button/link/summary; `overscroll-behavior-y: contain` plus `overflow-x: hidden` on `body`; `scroll-padding-top` on `html` for the sticky header.
+- Responsive: `.kpi-strip` goes 3-across starting at 414px (previously 1024px only); `.agenda-time` widens 52px to 68px at the same breakpoint. Below 414px both stay at their original (2-across / 52px) phone sizing.
+- `input, textarea` carry `font-size: var(--text-base-size)` (1rem) as a base-reset default (on top of the Unlock screen's own already-compliant input), so nothing new can regress iOS's zoom-on-focus behavior.
+
+## 10. Capture (Today)
+
+- A card at the top of Today: a `<textarea>` (rows 3, 1rem, `autocapitalize`/`autocorrect`/`spellcheck` on, `enterkeyhint` "done", `aria-label` "Capture a note"), a Save button, one hint line. Desktop only (`pointer: fine`): "n" focuses the box when focus isn't already in a field, Cmd/Ctrl+Enter saves, Escape blurs.
+- Storage: a `captures` IndexedDB store (`src/idb.ts`, `DB_VERSION` 2, alongside the existing `keys` store). A record is `{ id, at (ISO), salt (the blob salt it was written under), iv, ct }` - the note text is plaintext only in memory, never in the record. `src/crypto.ts` gained `encryptWithKey` (mirrors `decryptWithKey`: base64 through the same helpers, a fresh random 12-byte IV every call), and `deriveKey` now derives both `encrypt` and `decrypt` usages onto the one key, so the same unlocked key that reads the data blob also reads/writes captures. Upgrading an existing v1 database clears any previously-remembered key (it was decrypt-only) instead of leaving one captures can't use with - one extra unlock next time, then it is remembered again with both usages.
+- A record whose `salt` no longer matches the currently unlocked blob (or that otherwise fails to decrypt) reads "Locked (older key)" and offers Delete only.
+- Export, shown once at least one note exists: "Copy all" (Clipboard API, with a hidden-textarea/`execCommand` fallback) and "Send to inbox" - a `mailto:` built from `data.meta.captureEmail` (an optional `Meta` field; added to `data/life.json` only - gitignored, never in source) with subject "Life Dashboard capture" and the unlocked notes as the body, newest first; the button is absent without that field.
+- `src/lib/captures.ts` keeps the pure/testable pieces (newest-first sort, the lock check, record/view builders, the mailto builder) separate from its small amount of IndexedDB I/O, since this project's Vitest config runs in a Node environment (no DOM, no IndexedDB). `tests/captures.test.ts` covers the encrypt/decrypt round trip (plus a tampered-ciphertext rejection), newest-first ordering, a stale-salt record reading locked (and a no-key case), and the mailto builder taking its address as a parameter rather than a fixed one.

@@ -1,24 +1,38 @@
 /**
- * Minimal IndexedDB wrapper for "Remember on this device".
+ * Minimal IndexedDB wrapper - two stores in one database:
  *
- * Stores the derived (non-extractable) AES CryptoKey, keyed by the sealed
- * blob's base64 salt so a data update that reuses the same salt keeps a
- * remembered device working, and a --rotate'd salt correctly forces a
- * fresh unlock. Only the CryptoKey object is stored - never raw key bytes,
- * never the decrypted data, and never localStorage/sessionStorage.
+ *  - "keys" ("Remember on this device"): the derived (non-extractable) AES
+ *    CryptoKey, keyed by the sealed blob's base64 salt so a data update that
+ *    reuses the same salt keeps a remembered device working, and a
+ *    --rotate'd salt correctly forces a fresh unlock. Only the CryptoKey
+ *    object is stored - never raw key bytes, never the decrypted data, and
+ *    never localStorage/sessionStorage.
+ *  - "captures" (Today's capture card, src/lib/captures.ts): encrypted note
+ *    records, keyed by their own id.
  */
 
 const DB_NAME = 'life-dashboard';
-const STORE_NAME = 'keys';
-const DB_VERSION = 1;
+export const KEYS_STORE = 'keys';
+export const CAPTURES_STORE = 'captures';
+const DB_VERSION = 2;
 
-function openDb(): Promise<IDBDatabase> {
+export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
+      if (!db.objectStoreNames.contains(KEYS_STORE)) {
+        db.createObjectStore(KEYS_STORE);
+      } else if (event.oldVersion < 2) {
+        // Upgrading from v1: any previously remembered key was derived with
+        // decrypt-only usage, so it cannot encrypt a new capture. Clear it -
+        // this just forces one fresh passphrase unlock, after which the
+        // newly derived key (decrypt + encrypt, see src/crypto.ts) is
+        // remembered again and captures work from then on.
+        req.transaction?.objectStore(KEYS_STORE).clear();
+      }
+      if (!db.objectStoreNames.contains(CAPTURES_STORE)) {
+        db.createObjectStore(CAPTURES_STORE, { keyPath: 'id' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -30,8 +44,8 @@ export async function storeRememberedKey(salt: string, key: CryptoKey): Promise<
   const db = await openDb();
   try {
     await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(key, salt);
+      const tx = db.transaction(KEYS_STORE, 'readwrite');
+      tx.objectStore(KEYS_STORE).put(key, salt);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -44,8 +58,8 @@ export async function loadRememberedKey(salt: string): Promise<CryptoKey | undef
   const db = await openDb();
   try {
     return await new Promise<CryptoKey | undefined>((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const req = tx.objectStore(STORE_NAME).get(salt);
+      const tx = db.transaction(KEYS_STORE, 'readonly');
+      const req = tx.objectStore(KEYS_STORE).get(salt);
       req.onsuccess = () => resolve(req.result as CryptoKey | undefined);
       req.onerror = () => reject(req.error);
     });
@@ -58,8 +72,8 @@ export async function clearRememberedKeys(): Promise<void> {
   const db = await openDb();
   try {
     await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).clear();
+      const tx = db.transaction(KEYS_STORE, 'readwrite');
+      tx.objectStore(KEYS_STORE).clear();
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });

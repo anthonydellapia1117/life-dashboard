@@ -93,6 +93,10 @@ const SAFE_VALUES = new Set([
   // A note label in the career data; also tsconfig's compiler target and
   // event.target in the bundle.
   'target',
+  // Ordinary English words that happen to be values in the data and read
+  // naturally in test names and code comments.
+  'review',
+  'current',
 ]);
 
 // The sealed output file (public/data/life.enc.json, and its dist/ copy

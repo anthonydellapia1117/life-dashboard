@@ -5,12 +5,21 @@ import { focusActions, heroCounts, upNextGroups } from '../lib/priority';
 import { Agenda } from '../components/Agenda';
 import { Alerts } from '../components/Alerts';
 import { Balance } from '../components/Balance';
+import { Capture } from '../components/Capture';
 import { FocusList } from '../components/FocusList';
 import { KpiStrip } from '../components/KpiStrip';
 import { UpNext } from '../components/UpNext';
 
 /** Today answers one question: what do I do next. */
-export function Today({ data }: { data: LifeData }) {
+export function Today({
+  data,
+  cryptoKey,
+  salt,
+}: {
+  data: LifeData;
+  cryptoKey: CryptoKey | undefined;
+  salt: string;
+}) {
   const today = new Date();
   const actions = data.actions ?? [];
   const calendar = data.calendar ?? [];
@@ -24,6 +33,8 @@ export function Today({ data }: { data: LifeData }) {
 
   return (
     <div className="tab-page today-page">
+      <Capture cryptoKey={cryptoKey} salt={salt} captureEmail={data.meta.captureEmail} />
+
       <div className="today-grid">
         <div className="today-main">
           <section className="hero" aria-label="Summary">
