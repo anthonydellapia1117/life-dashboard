@@ -5,17 +5,17 @@ export function Unlock({
   error,
   busy,
 }: {
-  onUnlock: (passphrase: string, remember: boolean) => void;
+  onUnlock: (passphrase: string, setLock: boolean) => void;
   error?: string;
   busy: boolean;
 }) {
   const [passphrase, setPassphrase] = useState('');
-  const [remember, setRemember] = useState(true);
+  const [setLock, setSetLock] = useState(true);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!passphrase || busy) return;
-    onUnlock(passphrase, remember);
+    onUnlock(passphrase, setLock);
   }
 
   return (
@@ -39,8 +39,8 @@ export function Unlock({
           />
         </label>
         <label className="unlock-remember">
-          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-          Remember on this device
+          <input type="checkbox" checked={setLock} onChange={(e) => setSetLock(e.target.checked)} />
+          Set a short device lock after unlocking
         </label>
         {error ? (
           <div className="unlock-error" role="alert">

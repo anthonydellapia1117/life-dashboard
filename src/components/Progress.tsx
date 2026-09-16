@@ -11,17 +11,23 @@ import { GradeIcon } from './GradeIcon';
  * percent is the part you cannot act on.
  */
 
-/** The done/left bar. One fill, one ground, the numbers beside it in ordinary ink. */
-export function ProgressBar({ counts, label }: { counts: Counts; label?: string }) {
+/**
+ * The done/left bar. One fill, one ground, the numbers beside it in ordinary ink.
+ * `bare` drops the numbers for a place that has just said them in a sentence -
+ * printing "1 of 9 done" directly under "1 of 9 finished" is the same fact twice.
+ */
+export function ProgressBar({ counts, label, bare = false }: { counts: Counts; label?: string; bare?: boolean }) {
   return (
-    <div className="progress">
-      <div className="progress-head">
-        {label ? <span className="progress-label">{label}</span> : null}
-        <span className="progress-count">
-          <strong>{counts.done}</strong> of {counts.total} done
-        </span>
-        {counts.left > 0 ? <span className="progress-left">{counts.left} left</span> : null}
-      </div>
+    <div className={`progress${bare ? ' progress-bare' : ''}`}>
+      {bare ? null : (
+        <div className="progress-head">
+          {label ? <span className="progress-label">{label}</span> : null}
+          <span className="progress-count">
+            <strong>{counts.done}</strong> of {counts.total} done
+          </span>
+          {counts.left > 0 ? <span className="progress-left">{counts.left} left</span> : null}
+        </div>
+      )}
       <div
         className="progress-track"
         role="img"

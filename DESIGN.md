@@ -18,8 +18,7 @@ data lives in this file - see `data/life.json` (gitignored) for real content.
 
 ## 2. Mathematical structure
 
-All tokens live as CSS custom properties in `src/styles/global.css` (297
-lines).
+All tokens live as CSS custom properties in `src/styles/global.css`.
 
 **Spacing** - base unit 4px: `--space-1..16` = 4, 8, 12, 16, 24, 32, 48, 64px
 (x1,2,3,4,6,8,12,16). Nothing off-scale.
@@ -37,9 +36,17 @@ whole app; spacing tokens (section above) stay px:
 | xl | 1.953rem (31.25px) | 2.5rem (40px) |
 | hero | 3.052rem (48.83px) | 3.5rem (56px) |
 
-One typeface: `ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-Roboto, "Helvetica Neue", Arial, sans-serif`. Fraunces, JetBrains Mono, and
-the Google Fonts link are gone. Body defaults to proportional digits; only
+Two faces, both OFL, bundled into the build from `@fontsource` (latin subsets
+only) rather than linked from a font host: the service worker caches them as
+same-origin files, so the type survives offline, and opening the dashboard
+sends no request to any outside font service.
+
+- **Instrument Sans** (400/500/600) - everything you read.
+- **Instrument Serif** (400) - only figures and titles you look at: screen
+  titles, section titles, the hero figure, board counts, level and trend.
+
+Labels are an 11px uppercase eyebrow at 0.12-0.14em tracking. Body defaults
+to proportional digits; only
 `td`/`th` and a few numeric labels (agenda time, balance count) use
 `tabular-nums`. Unlock/segmented/nav text and inputs are >=12.8px, and every
 text input is exactly `--text-base-size` (16px) so iOS never zooms on focus.
@@ -51,23 +58,34 @@ where a simpler flex/2-up pattern already reads cleanly at every width.
 Today is a golden-ratio split on desktop: `grid-template-columns: 1.618fr
 1fr`.
 
-**Radius / borders** - 4px controls, 8px cards, 1px hairline borders one
-step off the surface, no shadows anywhere. Tap targets >= 44px (nav targets
-56px tall).
+**Radius / borders** - 2px everywhere. Structure comes from 1px rules, not
+boxes: section cards, item lists, the capture line and the progress cards are
+rule-topped or rule-separated, with no fill of their own. One shadow in the
+app, on the add button, because it floats over content. Tap targets >= 44px
+(nav targets 56px tall).
 
 **Colour tokens** - light default, dark via `prefers-color-scheme` (a
 chosen palette, not an auto-invert):
 
 | Token | Light | Dark |
 | --- | --- | --- |
-| bg | #f5f6f8 | #0b0f14 |
-| surface | #ffffff | #12171d |
-| surface-2 | #eef1f4 | #1a2027 |
-| border | #dde2e8 | #262d36 |
-| text-1 | #11151a | #f2f4f6 |
-| text-2 | #4b5563 | #a7b0bb |
-| text-3 | #6b7280 | #7c8794 |
-| accent | #0f766e | #2dd4bf |
+| bg (paper) | #faf8f4 | #13110e |
+| surface | #fffdf9 | #1b1814 |
+| surface-2 | #f2ede5 | #24201b |
+| border (rule) | #e2dbd0 | #332d26 |
+| rule-soft | #ede7dd | #2a2520 |
+| text-1 / ink | #16130f | #efe8dd |
+| text-2 | #5c554d | #bdb2a4 |
+| text-3 | #736859 | #968b7e |
+| accent | #0a5c55 | #45bcad |
+| on-ink | #faf8f4 | #13110e |
+| nav-bg | #f4f0e9 | #17140f |
+
+Primary actions (Save, Unlock, the add button) are **ink**, not accent - the
+accent is kept for links, focus, and progress fills, so it still means
+something when it appears. text-3 is darker than the chosen mockup's eyebrow
+grey: at 11px uppercase the mockup's #8c8278 measured 3.55:1 on paper, and
+#736859 clears 4.5:1 on both paper and surface-2.
 
 Status (reserved, fixed across both modes, icon + label only, never in
 text): critical #d03b3b, warning #fab219, good #0ca30c.
@@ -216,7 +234,7 @@ confirmed to fail the right test, then restored (see report).
 ## 8. Home-screen app (manifest, service worker)
 
 - `index.html` - viewport carries `viewport-fit=cover`; `apple-mobile-web-app-capable`/`mobile-web-app-capable`, status-bar-style `black-translucent`, title "AVD Life"; `theme-color` for light/dark via two media-query meta tags matching the `--bg` tokens; `manifest.webmanifest`, `apple-touch-icon` (180), `icon` (192) links. Every new href is relative (no leading slash) - the site is served under `/life-dashboard/`, and Vite's own `/src/main.tsx` entry tag is rewritten to that base separately at build time.
-- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#f5f6f8), icons 192/512/maskable-512 (already in `public/icons/`).
+- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#faf8f4), icons 192/512/maskable-512 (already in `public/icons/`).
 - `public/sw.js` - install (`skipWaiting` + a best-effort shell precache), activate (`clients.claim` + delete every cache but the current one), fetch (same-origin GET only - navigations and `data/life.enc.json` are network-first with a cache fallback; every other same-origin asset is stale-while-revalidate; cross-origin and non-GET requests are never touched, `respondWith` is simply not called for them).
 - Cache name is `` life-dashboard-${BUILD_ID} ``. `public/` is copied to `dist/` verbatim by Vite (public files are never run through esbuild/rollup, so a literal `define` substitution can't reach them) - `vite.config.ts` derives one `buildId` (`Date.now().toString(36)`), exposes it as a real `define: { __SW_BUILD_ID__ }` entry, and a small `closeBundle` plugin finds/replaces that same token in the already-copied `dist/sw.js`. Documented here so the two-step mechanism reads as a deliberate consequence of how publicDir copying works, not an oversight.
 - `src/main.tsx` registers `` `${BASE_URL}sw.js` `` only under `import.meta.env.PROD`, guarded by `typeof window !== 'undefined'` and `'serviceWorker' in navigator` - inert under Vitest's Node test environment even without the explicit guard.
@@ -303,3 +321,71 @@ overdue is worth twelve, clearing something undated is worth one. A flat score
 makes the cheapest way to win "do the easy things", which is exactly the habit
 a dashboard should not pay for. Every figure comes from real completions in the
 overlay - nothing is seeded, so an empty history reads as zero and says so.
+
+## The editorial direction
+
+Chosen over three alternatives (a dark instrument panel, a soft
+rounded consumer look, and a heavy poster style), all drawn against the
+shipped design at the same data. The diagnosis of the old look was that every
+choice was the safe default: a system font, one muted teal, white cards on a
+grey field, 4/8px radii, no depth. Nothing was wrong, which was the problem.
+
+What changed and why:
+
+1. **A serif for figures only.** The one number a screen exists to show is set
+   at 96px in Instrument Serif; everything read rather than looked at stays
+   sans. Serif against sans sets the order of importance, so size and
+   bold no longer have to.
+2. **Rules instead of boxes.** Removing card fills and borders took away the
+   most repeated visual element in the app and let whitespace separate things.
+3. **Paper and ink.** A warm ground with near-black text, and primary buttons
+   in ink, so colour is left for the grade ramp and the accent.
+4. **One sentence under the hero, not a stat row.** "1 of 9 finished. 8 still
+   open." then a 3px bar. The bar used to print the same numbers again.
+
+Where the build deliberately differs from the mockup: the mockup coloured
+grade labels ("OVERDUE" in red). As 11px text on paper, teal, grey and green
+fail 4.5:1, and text never wears a data colour here - so the glyph carries the
+grade colour and the word stays in ink.
+
+The accepted cost: fewer items per screen than any of the alternatives, and
+hairline rules are the first thing to wash out in direct sun or at low
+brightness.
+
+## Device lock
+
+A short code that opens the app on one device, chosen in place of
+putting a short password on the public file.
+
+**The problem it solves without creating a worse one.** The data ships as
+ciphertext in a public repo. A short password on that file would be guessable
+offline by anyone, forever, from git history, and "AVD" is printed on the
+site, so a name-plus-common-word code would be an early guess. The lock keeps
+the file under its strong passphrase and only protects a copy of the key kept
+on your own device.
+
+**How it works.**
+1. Unlock once with the full passphrase. The passphrase is proven by actually
+   decrypting the file before any key byte is exported.
+2. Choose a code. The raw data key is wrapped with a key derived from the code
+   (PBKDF2-SHA256, 600,000 iterations, fresh salt and IV) and only the wrapped
+   bytes are stored. The raw bytes are zeroed on every way out of that step.
+3. From then on the device asks for the code. The unwrapped key is imported as
+   non-extractable, so the app can use it but never read it back out.
+
+**Five tries, counted before they are checked.** Each try is written to
+storage before the code is tested, and refunded only by a right code, so
+reloading the page mid-check cannot buy a free guess. If storage cannot
+record a try, the try is refused. The fifth wrong code wipes the stored copy,
+and only the full passphrase works after that. The full passphrase is always
+one tap away on the lock screen, so none of this can lock the owner out.
+
+**What it does not protect against.** Someone who copies the device's storage
+files off disk can try codes offline without the counter. A short code is
+lower entropy than the passphrase; the iteration count slows that attack, it
+does not stop it. That is accepted and stated rather than implied away.
+
+**Stale locks.** If the file is re-sealed with a new passphrase under the same
+salt, the code still unwraps the old key but that key no longer opens the
+data. The app detects it, clears the lock, and asks for the passphrase instead
+of leaving the owner on a lock screen that cannot work.

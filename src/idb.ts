@@ -15,7 +15,8 @@ const DB_NAME = 'life-dashboard';
 export const KEYS_STORE = 'keys';
 export const CAPTURES_STORE = 'captures';
 export const EDITS_STORE = 'edits';
-const DB_VERSION = 3;
+export const LOCKS_STORE = 'locks';
+const DB_VERSION = 4;
 
 export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -37,6 +38,9 @@ export function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(EDITS_STORE)) {
         db.createObjectStore(EDITS_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(LOCKS_STORE)) {
+        db.createObjectStore(LOCKS_STORE);
       }
     };
     req.onsuccess = () => resolve(req.result);

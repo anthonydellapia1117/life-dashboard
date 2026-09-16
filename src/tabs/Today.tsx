@@ -70,13 +70,14 @@ export function Today({
       <div className="today-grid">
         <div className="today-main">
           <section className="hero" aria-label="Summary">
-            <div className="hero-value">{pressing} to do now</div>
+            <div className="hero-eyebrow">To do now</div>
+            <div className="hero-figure">{pressing}</div>
             <div className="hero-sub">
-              {counts.done} of {counts.total} done, {counts.left} left
+              <strong>{counts.done}</strong> of {counts.total} finished. {counts.left} still open.
             </div>
+            <ProgressBar counts={counts} bare />
           </section>
 
-          <ProgressBar counts={counts} />
           <GradeDistribution nodes={actionable} now={now} title="Where everything sits" />
 
           <section aria-label="Focus">

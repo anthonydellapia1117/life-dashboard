@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
+import type { SealedBlob } from '../crypto';
 import type { SectionId } from '../lib/routing';
 import type { EditFields } from '../lib/edits';
 import type { Live, ResolvedNode } from '../lib/live';
 import { Board } from '../components/Board';
 import { Brain } from '../components/Brain';
 import { DataControls } from '../components/DataControls';
+import { DeviceLockSettings } from '../components/DeviceLockSettings';
 import { Momentum } from '../components/Momentum';
 import { Roadmap } from '../components/Roadmap';
 import { GradeDistribution, ProgressBar } from '../components/Progress';
@@ -29,6 +31,9 @@ export function MapTab({
   onPatch,
   onToggle,
   onOpen,
+  blob,
+  hasLock,
+  onLockChanged,
 }: {
   section: SectionId | undefined;
   live: Live;
@@ -37,6 +42,9 @@ export function MapTab({
   onPatch: (id: string, fields: EditFields) => void;
   onToggle: (id: string) => void;
   onOpen: (id: string) => void;
+  blob: SealedBlob | undefined;
+  hasLock: boolean;
+  onLockChanged: () => void;
 }) {
   const [area, setArea] = useState<string>('all');
   const [hideDone, setHideDone] = useState(false);
@@ -73,6 +81,7 @@ export function MapTab({
         <>
           <Momentum nodes={nodes} now={now} />
           <DataControls live={live} />
+          {blob ? <DeviceLockSettings blob={blob} hasLock={hasLock} onChanged={onLockChanged} /> : null}
         </>
       ) : (
         <>

@@ -39,10 +39,9 @@ export function Momentum({ nodes, now, days = 28 }: { nodes: ResolvedNode[]; now
 
   return (
     <div className="momentum">
-      <section className="momentum-hero" aria-label="Streak">
-        <div className="hero-value">
-          {streak.current} day{streak.current === 1 ? '' : 's'} running
-        </div>
+      <section className="momentum-hero hero" aria-label="Streak">
+        <div className="hero-eyebrow">Days in a row</div>
+        <div className="hero-figure">{streak.current}</div>
         <div className="hero-sub">
           {everFinished
             ? `Longest ${streak.longest}. ${momentum.thisWeek} done this week, ${momentum.lastWeek} the week before.`

@@ -1,7 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SealedBlob } from './crypto';
 import { WrongPassphraseError, decryptWithKey, unlockWithPassphrase } from './crypto';
-import { clearRememberedKeys, loadRememberedKey, storeRememberedKey } from './idb';
+import { clearRememberedKeys, loadRememberedKey } from './idb';
+import {
+  LockStorageError,
+  WrongLockCodeError,
+  attemptUnlock,
+  clearLock,
+  createLockRecord,
+  loadLock,
+  saveLock,
+  triesLeft,
+  unlockExtractable,
+  type LockRecord,
+} from './lib/deviceLock';
 import type { LifeData } from './types';
 import {
   ZONE_LABELS,
@@ -19,6 +31,8 @@ import { Header } from './components/Header';
 import { NavBar } from './components/NavBar';
 import { SegmentedControl } from './components/SegmentedControl';
 import { Unlock } from './components/Unlock';
+import { LockScreen } from './components/LockScreen';
+import { SetLock } from './components/SetLock';
 import { EditSheet } from './components/EditSheet';
 import { SectionOverview } from './components/SectionOverview';
 import { Today } from './tabs/Today';
@@ -32,7 +46,7 @@ import { Unico } from './tabs/Unico';
 import { Projects } from './tabs/Projects';
 import { AiStack } from './tabs/AiStack';
 
-type Phase = 'loading' | 'error' | 'locked' | 'unlocked';
+type Phase = 'loading' | 'error' | 'locked' | 'lockcode' | 'setlock' | 'unlocked';
 
 function renderSection(section: SectionId | undefined, data: LifeData) {
   switch (section) {
@@ -77,6 +91,20 @@ export default function App() {
   const [fetchError, setFetchError] = useState<string | undefined>();
   const [unlockError, setUnlockError] = useState<string | undefined>();
   const [unlocking, setUnlocking] = useState(false);
+  // The device lock record for the current blob's salt (src/lib/deviceLock.ts) -
+  // undefined means this device has no lock set. hasLock mirrors "a record
+  // exists" as a plain boolean for MapTab/DeviceLockSettings, refreshed after
+  // load and whenever DeviceLockSettings reports a change.
+  const [lockRecord, setLockRecord] = useState<LockRecord | undefined>();
+  const [hasLock, setHasLock] = useState(false);
+  const [lockCodeError, setLockCodeError] = useState<string | undefined>();
+  const [lockCodeBusy, setLockCodeBusy] = useState(false);
+  const [setLockBusy, setSetLockBusy] = useState(false);
+  const [setLockError, setSetLockError] = useState<string | undefined>();
+  // Raw data-key bytes, only ever held here (never in React state, never
+  // logged) between a passphrase unlock with setLock ticked and the moment
+  // SetLock's onSet wraps them into a LockRecord and zeroes them.
+  const rawRef = useRef<Uint8Array | undefined>(undefined);
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
   const [editing, setEditing] = useState<string | undefined>();
 
@@ -111,6 +139,15 @@ export default function App() {
         const parsedBlob = (await res.json()) as SealedBlob;
         if (cancelled) return;
         setBlob(parsedBlob);
+
+        const lock = await loadLock(parsedBlob.salt).catch(() => undefined);
+        if (cancelled) return;
+        setHasLock(!!lock);
+        if (lock) {
+          setLockRecord(lock);
+          setPhase('lockcode');
+          return;
+        }
 
         const stored = await loadRememberedKey(parsedBlob.salt).catch(() => undefined);
         if (stored) {
@@ -151,28 +188,172 @@ export default function App() {
     setRoute((prev) => ({ zone: prev.zone, section }));
   }
 
-  async function handleUnlock(passphrase: string, remember: boolean) {
+  /** setLock ticked -> keep the app decrypted, but detour through 'setlock' before it is browsable. Otherwise, unchanged. */
+  async function handleUnlock(passphrase: string, setLock: boolean) {
     if (!blob) return;
     setUnlocking(true);
     setUnlockError(undefined);
     try {
-      const { key, data: decrypted } = await unlockWithPassphrase(blob, passphrase, false);
-      setData(decrypted as LifeData);
-      setCryptoKey(key);
-      setPhase('unlocked');
-      if (remember) {
-        await storeRememberedKey(blob.salt, key).catch(() => {
-          // Remembering is a convenience, not a requirement - ignore failures.
-        });
+      if (setLock) {
+        const { raw, key, data: decrypted } = await unlockExtractable(blob, passphrase);
+        rawRef.current = raw;
+        setData(decrypted as LifeData);
+        setCryptoKey(key);
+        setPhase('setlock');
+      } else {
+        const { key, data: decrypted } = await unlockWithPassphrase(blob, passphrase, false);
+        setData(decrypted as LifeData);
+        setCryptoKey(key);
+        setPhase('unlocked');
       }
     } catch (err) {
+      zeroRaw();
       setUnlockError(err instanceof WrongPassphraseError ? err.message : 'Something went wrong unlocking the data.');
     } finally {
       setUnlocking(false);
     }
   }
 
+  async function handleLockCodeSubmit(code: string) {
+    if (!blob || !lockRecord) return;
+    const salt = blob.salt;
+    setLockCodeBusy(true);
+    setLockCodeError(undefined);
+    try {
+      // Read the stored record, never React state, so a second tab or a reload
+      // can never hand this attempt a stale, lower failure count. If storage
+      // cannot be read, the try is refused rather than counted against memory.
+      let current: LockRecord | undefined;
+      try {
+        current = await loadLock(salt);
+      } catch {
+        throw new LockStorageError();
+      }
+      if (!current) {
+        // Wiped elsewhere (another tab ran out of tries).
+        setLockRecord(undefined);
+        setHasLock(false);
+        setUnlockError('Enter the full passphrase to open this device.');
+        setPhase('locked');
+        return;
+      }
+
+      const result = await attemptUnlock(
+        current,
+        code,
+        (record) => saveLock(salt, record),
+        () => clearLock(salt),
+      );
+
+      if (result.ok) {
+        try {
+          const decrypted = await decryptWithKey(blob, result.key);
+          setLockRecord(result.record);
+          setData(decrypted as LifeData);
+          setCryptoKey(result.key);
+          setPhase('unlocked');
+        } catch {
+          // The code was right but the key it guards no longer opens the data:
+          // the file was re-sealed with a new passphrase under the same salt.
+          // The lock is stale, not wrong - clear it rather than strand the owner.
+          await clearLock(salt).catch(() => undefined);
+          setLockRecord(undefined);
+          setHasLock(false);
+          setUnlockError('Your data was re-sealed with a new passphrase. Enter it, then set your lock again.');
+          setPhase('locked');
+        }
+      } else if (result.wiped) {
+        setLockRecord(undefined);
+        setHasLock(false);
+        setUnlockError('Too many tries. Enter the full passphrase, then set a new lock.');
+        setPhase('locked');
+      } else {
+        setLockRecord(result.record);
+        setLockCodeError(new WrongLockCodeError().message);
+      }
+    } catch (err) {
+      setLockCodeError(
+        err instanceof LockStorageError
+          ? `${err.message} Use the full passphrase instead.`
+          : 'Something went wrong opening the device lock.',
+      );
+    } finally {
+      setLockCodeBusy(false);
+    }
+  }
+
+  /** Bails out of the device lock screen without touching the stored lock record. */
+  function handleUseFullPassphrase() {
+    setLockCodeError(undefined);
+    setPhase('locked');
+  }
+
+  /** Every exit from holding the raw key - set, skip, error - goes through here. */
+  function zeroRaw() {
+    if (rawRef.current) {
+      rawRef.current.fill(0);
+      rawRef.current = undefined;
+    }
+  }
+
+  async function handleSetLockCode(code: string) {
+    if (!blob) return;
+    if (!rawRef.current) {
+      setSetLockError('This step expired. Skip for now, then set the lock from Map > Progress.');
+      return;
+    }
+    setSetLockBusy(true);
+    setSetLockError(undefined);
+    try {
+      const record = await createLockRecord(rawRef.current, code);
+      await saveLock(blob.salt, record);
+      // A plain remembered key would let the app open without the code,
+      // which defeats the point of setting a lock.
+      await clearRememberedKeys().catch(() => {
+        // Best effort - the new lock record is already saved above.
+      });
+      zeroRaw();
+      setLockRecord(record);
+      setHasLock(true);
+      setPhase('unlocked');
+    } catch {
+      // The key is not kept around for a retry: it would sit in memory for as
+      // long as this screen stays open. Skip, then set the lock from Settings,
+      // which asks for the passphrase again.
+      zeroRaw();
+      setSetLockError('Could not save the lock on this device. Skip for now, then set it from Map > Progress.');
+    } finally {
+      setSetLockBusy(false);
+    }
+  }
+
+  function handleSkipSetLock() {
+    zeroRaw();
+    setSetLockError(undefined);
+    setPhase('unlocked');
+  }
+
+  /** Refreshed after load and whenever DeviceLockSettings reports a change - never inferred from stale state. */
+  async function refreshHasLock() {
+    if (!blob) return;
+    const lock = await loadLock(blob.salt).catch(() => undefined);
+    setHasLock(!!lock);
+  }
+
   async function handleLock() {
+    if (hasLock && blob) {
+      const lock = await loadLock(blob.salt).catch(() => undefined);
+      if (lock) {
+        setLockRecord(lock);
+        setData(undefined);
+        setCryptoKey(undefined);
+        setPhase('lockcode');
+        setUnlockError(undefined);
+        setLockCodeError(undefined);
+        setEditing(undefined);
+        return;
+      }
+    }
     await clearRememberedKeys().catch(() => {
       // Best effort - still lock the UI even if IndexedDB is unavailable.
     });
@@ -228,6 +409,18 @@ export default function App() {
           {phase === 'loading' ? <div className="status-message">Loading...</div> : null}
           {phase === 'error' ? <div className="status-message status-error">{fetchError}</div> : null}
           {phase === 'locked' ? <Unlock onUnlock={handleUnlock} error={unlockError} busy={unlocking} /> : null}
+          {phase === 'lockcode' ? (
+            <LockScreen
+              onSubmit={handleLockCodeSubmit}
+              onUsePassphrase={handleUseFullPassphrase}
+              error={lockCodeError}
+              busy={lockCodeBusy}
+              triesLeft={lockRecord ? triesLeft(lockRecord) : undefined}
+            />
+          ) : null}
+          {phase === 'setlock' ? (
+            <SetLock onSet={handleSetLockCode} onSkip={handleSkipSetLock} busy={setLockBusy} error={setLockError} />
+          ) : null}
           {phase === 'unlocked' && data ? (
             <div id={`panel-${route.zone}${route.section ? `-${route.section}` : ''}`}>
               {live.lockedCount > 0 ? (
@@ -255,6 +448,9 @@ export default function App() {
                   onPatch={handlePatch}
                   onToggle={live.toggleDone}
                   onOpen={setEditing}
+                  blob={blob}
+                  hasLock={hasLock}
+                  onLockChanged={refreshHasLock}
                 />
               ) : (
                 <>
