@@ -130,6 +130,11 @@ export function Capture({
   return (
     <section className={`capture-card${open || text ? ' capture-open' : ''}`} aria-label="Capture">
       <div className="capture-box">
+        <span className="capture-plus" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+          </svg>
+        </span>
         <textarea
           ref={textareaRef}
           className="capture-textarea"

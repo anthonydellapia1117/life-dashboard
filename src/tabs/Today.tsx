@@ -89,6 +89,7 @@ export function Today({
               onToggle={live.toggleDone}
               onOpen={onOpen}
               empty="Nothing open. That is the whole list, not a loading state."
+              cards
             />
           </section>
 

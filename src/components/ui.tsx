@@ -33,7 +33,7 @@ export function Card({
 export function Pill({ tone, children }: { tone: PillTone; children: React.ReactNode }) {
   const status = PILL_STATUS[tone];
   return (
-    <span className={`pill pill-${tone}`}>
+    <span className="pill">
       {status ? <StatusIcon tone={status} /> : null}
       {children}
     </span>

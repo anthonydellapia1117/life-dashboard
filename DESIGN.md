@@ -36,17 +36,14 @@ whole app; spacing tokens (section above) stay px:
 | xl | 1.953rem (31.25px) | 2.5rem (40px) |
 | hero | 3.052rem (48.83px) | 3.5rem (56px) |
 
-Two faces, both OFL, bundled into the build from `@fontsource` (latin subsets
-only) rather than linked from a font host: the service worker caches them as
-same-origin files, so the type survives offline, and opening the dashboard
-sends no request to any outside font service.
-
-- **Instrument Sans** (400/500/600) - everything you read.
-- **Instrument Serif** (400) - only figures and titles you look at: screen
-  titles, section titles, the hero figure, board counts, level and trend.
-
-Labels are an 11px uppercase eyebrow at 0.12-0.14em tracking. Body defaults
-to proportional digits; only
+One family, **Plus Jakarta Sans** (OFL, weights 400-800), bundled into the
+build from `@fontsource` (latin subset only) rather than linked from a font
+host: the service worker caches it as same-origin files, so the type survives
+offline, and opening the dashboard sends no request to any outside font
+service. Figures (screen titles, the hero number, level, trend) use the same
+face at weight 800 with tight tracking, so weight rather than a second
+typeface sets them apart. Section labels are 13px uppercase at 0.06em. Body
+defaults to proportional digits; only
 `td`/`th` and a few numeric labels (agenda time, balance count) use
 `tabular-nums`. Unlock/segmented/nav text and inputs are >=12.8px, and every
 text input is exactly `--text-base-size` (16px) so iOS never zooms on focus.
@@ -58,34 +55,36 @@ where a simpler flex/2-up pattern already reads cleanly at every width.
 Today is a golden-ratio split on desktop: `grid-template-columns: 1.618fr
 1fr`.
 
-**Radius / borders** - 2px everywhere. Structure comes from 1px rules, not
-boxes: section cards, item lists, the capture line and the progress cards are
-rule-topped or rule-separated, with no fill of their own. One shadow in the
-app, on the add button, because it floats over content. Tap targets >= 44px
-(nav targets 56px tall).
+**Radius / shadow / containers** - tokens, so the look can change in one
+block: `--radius-control` 12px, `--radius-card` 20px, `--radius-item` 14px,
+`--radius-pill` 999px, and two soft shadows (`--shadow-card`,
+`--shadow-item`). Every group of related things sits in its own white card:
+section cards, item lists, the capture box, the grade breakdown, the progress
+cards, board cards and columns. In dark mode a shadow does not read, so cards
+carry a 1px `--card-border` instead. Tap targets >= 44px (nav targets 56px
+tall).
 
 **Colour tokens** - light default, dark via `prefers-color-scheme` (a
 chosen palette, not an auto-invert):
 
 | Token | Light | Dark |
 | --- | --- | --- |
-| bg (paper) | #faf8f4 | #13110e |
-| surface | #fffdf9 | #1b1814 |
-| surface-2 | #f2ede5 | #24201b |
-| border (rule) | #e2dbd0 | #332d26 |
-| rule-soft | #ede7dd | #2a2520 |
-| text-1 / ink | #16130f | #efe8dd |
-| text-2 | #5c554d | #bdb2a4 |
-| text-3 | #736859 | #968b7e |
-| accent | #0a5c55 | #45bcad |
-| on-ink | #faf8f4 | #13110e |
-| nav-bg | #f4f0e9 | #17140f |
+| bg (ground) | #f4f1ec | #14120f |
+| surface (cards) | #ffffff | #1f1b17 |
+| surface-2 (panels, tracks) | #efe9e1 | #2a251f |
+| border | #e6dfd5 | #342e27 |
+| card-border | transparent | #2e2822 |
+| text-1 | #241f1a | #f1ebe2 |
+| text-2 | #574d44 | #c9beb0 |
+| text-3 | #6e6356 | #a0958a |
+| accent | #0f766e | #3fb5a6 |
+| on-accent | #ffffff | #10100c |
+| nav-bg | #ffffff | #1a1713 |
 
-Primary actions (Save, Unlock, the add button) are **ink**, not accent - the
-accent is kept for links, focus, and progress fills, so it still means
-something when it appears. text-3 is darker than the chosen mockup's eyebrow
-grey: at 11px uppercase the mockup's #8c8278 measured 3.55:1 on paper, and
-#736859 clears 4.5:1 on both paper and surface-2.
+Every text token clears 4.5:1 on bg, surface, surface-2 and nav-bg: worst
+pair 4.86:1 in light, 5.18:1 in dark. Primary actions (Save, Unlock, the add
+button) are the teal accent, with `on-accent` flipping from white to near
+black in dark mode, where white on the lighter teal would not pass.
 
 Status (reserved, fixed across both modes, icon + label only, never in
 text): critical #d03b3b, warning #fab219, good #0ca30c.
@@ -234,7 +233,7 @@ confirmed to fail the right test, then restored (see report).
 ## 8. Home-screen app (manifest, service worker)
 
 - `index.html` - viewport carries `viewport-fit=cover`; `apple-mobile-web-app-capable`/`mobile-web-app-capable`, status-bar-style `black-translucent`, title "AVD Life"; `theme-color` for light/dark via two media-query meta tags matching the `--bg` tokens; `manifest.webmanifest`, `apple-touch-icon` (180), `icon` (192) links. Every new href is relative (no leading slash) - the site is served under `/life-dashboard/`, and Vite's own `/src/main.tsx` entry tag is rewritten to that base separately at build time.
-- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#faf8f4), icons 192/512/maskable-512 (already in `public/icons/`).
+- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#f4f1ec), icons 192/512/maskable-512 (already in `public/icons/`).
 - `public/sw.js` - install (`skipWaiting` + a best-effort shell precache), activate (`clients.claim` + delete every cache but the current one), fetch (same-origin GET only - navigations and `data/life.enc.json` are network-first with a cache fallback; every other same-origin asset is stale-while-revalidate; cross-origin and non-GET requests are never touched, `respondWith` is simply not called for them).
 - Cache name is `` life-dashboard-${BUILD_ID} ``. `public/` is copied to `dist/` verbatim by Vite (public files are never run through esbuild/rollup, so a literal `define` substitution can't reach them) - `vite.config.ts` derives one `buildId` (`Date.now().toString(36)`), exposes it as a real `define: { __SW_BUILD_ID__ }` entry, and a small `closeBundle` plugin finds/replaces that same token in the already-copied `dist/sw.js`. Documented here so the two-step mechanism reads as a deliberate consequence of how publicDir copying works, not an oversight.
 - `src/main.tsx` registers `` `${BASE_URL}sw.js` `` only under `import.meta.env.PROD`, guarded by `typeof window !== 'undefined'` and `'serviceWorker' in navigator` - inert under Vitest's Node test environment even without the explicit guard.
@@ -322,35 +321,37 @@ makes the cheapest way to win "do the easy things", which is exactly the habit
 a dashboard should not pay for. Every figure comes from real completions in the
 overlay - nothing is seeded, so an empty history reads as zero and says so.
 
-## The editorial direction
+## The soft direction
 
-Chosen over three alternatives (a dark instrument panel, a soft
-rounded consumer look, and a heavy poster style), all drawn against the
-shipped design at the same data. The diagnosis of the old look was that every
-choice was the safe default: a system font, one muted teal, white cards on a
-grey field, 4/8px radii, no depth. Nothing was wrong, which was the problem.
+Chosen after living with two others. The first shipped design was competent
+but read as dull: a system font, one muted teal, white cards on a grey field,
+4/8px radii. An editorial pass (serif figures, paper and ink, thin rules
+instead of boxes) fixed the dullness but failed in use: with every container
+removed, nothing grouped anything, and the owner could not break a screen into
+parts at a glance. That is the lesson this direction is built on - **on this
+dashboard, containers are information**, not decoration.
 
-What changed and why:
+What it keeps and what it changes:
 
-1. **A serif for figures only.** The one number a screen exists to show is set
-   at 96px in Instrument Serif; everything read rather than looked at stays
-   sans. Serif against sans sets the order of importance, so size and
-   bold no longer have to.
-2. **Rules instead of boxes.** Removing card fills and borders took away the
-   most repeated visual element in the app and let whitespace separate things.
-3. **Paper and ink.** A warm ground with near-black text, and primary buttons
-   in ink, so colour is left for the grade ramp and the accent.
-4. **One sentence under the hero, not a stat row.** "1 of 9 finished. 8 still
-   open." then a 3px bar. The bar used to print the same numbers again.
+1. **Containers are back, softer.** Every group of related things is its own
+   white rounded card on a warm ground, lifted by a soft shadow instead of
+   outlined by a border.
+2. **Focus floats.** The three Focus items are separate cards; longer lists
+   share one container with dividers. The difference in treatment is itself
+   the signal that Focus matters more.
+3. **Pills for everything small.** Grade chips, legend keys, badges and tabs
+   are pills with a tinted ground. The tint and the glyph carry the grade
+   colour; the word stays in ink, so no grade colour is ever asked to pass as
+   small text.
+4. **The figure beside its sentence.** "5" at 76px/800 with "1 of 9 finished.
+   8 still open." next to it, then the bar - one grid, no extra markup.
+5. **A faint wash** of teal and amber on the ground behind the top of Today and
+   Progress. It sits under every card, so cards stay white, and it stops at
+   the screen edge (a wider wash made the page scroll sideways).
 
-Where the build deliberately differs from the mockup: the mockup coloured
-grade labels ("OVERDUE" in red). As 11px text on paper, teal, grey and green
-fail 4.5:1, and text never wears a data colour here - so the glyph carries the
-grade colour and the word stays in ink.
-
-The accepted cost: fewer items per screen than any of the alternatives, and
-hairline rules are the first thing to wash out in direct sun or at low
-brightness.
+The grade ramp moved one step for this ground: light "done" is #0a9410,
+because #0ca30c measured 2.78:1 on the tinted board panels, under the 3:1 a
+mark needs.
 
 ## Device lock
 

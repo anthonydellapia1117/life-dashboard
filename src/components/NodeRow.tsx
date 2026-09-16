@@ -64,6 +64,7 @@ export function NodeList({
   onOpen,
   empty = 'Nothing here.',
   showArea = true,
+  cards = false,
 }: {
   nodes: ResolvedNode[];
   now: Date;
@@ -71,10 +72,12 @@ export function NodeList({
   onOpen: (id: string) => void;
   empty?: string;
   showArea?: boolean;
+  /** Each item as its own card instead of rows sharing one container - for the short lists that matter most. */
+  cards?: boolean;
 }) {
   if (nodes.length === 0) return <p className="empty">{empty}</p>;
   return (
-    <div className="node-list">
+    <div className={cards ? 'node-list node-list-cards' : 'node-list'}>
       {nodes.map((node) => (
         <NodeRow key={node.id} node={node} now={now} onToggle={onToggle} onOpen={onOpen} showArea={showArea} />
       ))}
