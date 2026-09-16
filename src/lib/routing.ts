@@ -14,7 +14,7 @@
  * via LEGACY_HASH_MAP, to its new home below.
  */
 
-export type ZoneId = 'today' | 'work' | 'life' | 'build';
+export type ZoneId = 'today' | 'work' | 'life' | 'build' | 'map';
 
 export type SectionId =
   | 'engagement'
@@ -24,20 +24,25 @@ export type SectionId =
   | 'finances'
   | 'community'
   | 'projects'
-  | 'ai-stack';
+  | 'ai-stack'
+  | 'board'
+  | 'roadmap'
+  | 'brain'
+  | 'progress';
 
 export interface Route {
   zone: ZoneId;
   section?: SectionId;
 }
 
-export const ZONE_IDS: ZoneId[] = ['today', 'work', 'life', 'build'];
+export const ZONE_IDS: ZoneId[] = ['today', 'work', 'life', 'build', 'map'];
 
 export const ZONE_LABELS: Record<ZoneId, string> = {
   today: 'Today',
   work: 'Work',
   life: 'Life',
   build: 'Build',
+  map: 'Map',
 };
 
 export const SECTIONS_BY_ZONE: Record<ZoneId, SectionId[]> = {
@@ -45,6 +50,7 @@ export const SECTIONS_BY_ZONE: Record<ZoneId, SectionId[]> = {
   work: ['engagement', 'career', 'business'],
   life: ['family', 'finances', 'community'],
   build: ['projects', 'ai-stack'],
+  map: ['board', 'roadmap', 'brain', 'progress'],
 };
 
 /** Neutral fallback heading for a section when the data carries no title of its own. */
@@ -57,7 +63,14 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   community: 'Community',
   projects: 'Projects',
   'ai-stack': 'AI stack',
+  board: 'Board',
+  roadmap: 'Roadmap',
+  brain: 'Brain',
+  progress: 'Progress',
 };
+
+/** The zones that render data screens - Map is a view of the same items, not a place items live. */
+export const CONTENT_ZONES: ZoneId[] = ['work', 'life', 'build'];
 
 /** Old flat-tab hash (no leading "#") -> new canonical path (no leading "#"). */
 const LEGACY_HASH_MAP: Record<string, string> = {

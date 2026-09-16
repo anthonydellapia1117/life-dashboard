@@ -236,3 +236,70 @@ confirmed to fail the right test, then restored (see report).
 - A record whose `salt` no longer matches the currently unlocked blob (or that otherwise fails to decrypt) reads "Locked (older key)" and offers Delete only.
 - Export, shown once at least one note exists: "Copy all" (Clipboard API, with a hidden-textarea/`execCommand` fallback) and "Send to inbox" - a `mailto:` built from `data.meta.captureEmail` (an optional `Meta` field; added to `data/life.json` only - gitignored, never in source) with subject "Life Dashboard capture" and the unlocked notes as the body, newest first; the button is absent without that field.
 - `src/lib/captures.ts` keeps the pure/testable pieces (newest-first sort, the lock check, record/view builders, the mailto builder) separate from its small amount of IndexedDB I/O, since this project's Vitest config runs in a Node environment (no DOM, no IndexedDB). `tests/captures.test.ts` covers the encrypt/decrypt round trip (plus a tampered-ciphertext rejection), newest-first ordering, a stale-salt record reading locked (and a no-key case), and the mailto builder taking its address as a parameter rather than a fixed one.
+
+## The grade ramp
+
+Everything in the app resolves to exactly one grade, and a grade is the only
+way the app says "when". Eight of them, most urgent first:
+
+| Grade | Means | Family |
+|---|---|---|
+| Overdue | due before today, not done | red |
+| Today | due today, or horizon `now` with no date | red |
+| Tomorrow | due tomorrow | teal |
+| This week | due through the coming Sunday | teal |
+| Next week | the Monday-Sunday after that | blue |
+| Later | within 90 days | grey |
+| No date | beyond 90 days, or no date at all | grey |
+| Done | checked off, whatever the date says | green |
+
+Weeks are calendar weeks ending Sunday, not a rolling seven days, because that
+is what the words mean to a person. On a Saturday "this week" is nearly empty,
+and that is correct rather than a bug.
+
+**Why five hue families and not eight hues.** Three warm hues in a row
+(red, orange, amber) failed CVD separation in both light and dark: a deutan
+reader could not tell overdue from today from tomorrow, and the adjacent-pair
+delta E ran as low as 2.4 where 8 is the floor. Pairing grades into families
+and separating the families by hue fixed it. The five anchors pass the
+lightness band, CVD separation, normal-vision separation and 3:1 contrast
+against both surfaces; the within-family pairs are sequential lightness steps,
+which is what a sequential ramp is supposed to be. Two checks are deliberately
+accepted and documented in `global.css`: grey fails the chroma floor because
+grey *is* the meaning for "later" and "no date", and teal sits just under it
+because it is the app accent.
+
+**Colour never works alone.** Every grade ships with an icon whose silhouette
+differs from the others and with its word spelled out. Text keeps its own ink
+token and never wears a grade colour, so contrast is a property of the type
+scale rather than something the palette has to carry.
+
+## The three Map views
+
+All three read the same resolved list, so a box checked anywhere moves every
+number everywhere.
+
+1. **Board.** Columns are grades. A card's column and its due date are the same
+   fact seen twice and cannot drift apart. Cards move with two chevrons rather
+   than by dragging: dragging on a touch screen fights the page scroll, needs a
+   long press to start, and has no keyboard equivalent. Moving a card writes a
+   real date - "Next week" becomes the Monday after this one, not the word.
+2. **Roadmap.** Months down the page on a phone, an area grid at desktop width.
+   Empty months stay visible: a roadmap that closes its gaps reads as a solid
+   run of work and hides the fact that November is free, which is the thing a
+   roadmap is for.
+3. **Brain.** Life, its zones, their areas, and every item, as one graph.
+   Leaves are coloured by grade, not by area - a second categorical palette for
+   a dozen areas would have collided with the reserved ramp and put two colour
+   languages on one screen. Structure already says which area an item is in, so
+   colour is free to say what structure cannot: what is late. The layout is
+   seeded, computed once per data change, and never animated on a loop, because
+   a graph that keeps drifting is a graph you cannot point at.
+
+## Progress
+
+Scoring is weighted by grade, not one point per item: clearing something
+overdue is worth twelve, clearing something undated is worth one. A flat score
+makes the cheapest way to win "do the easy things", which is exactly the habit
+a dashboard should not pay for. Every figure comes from real completions in the
+overlay - nothing is seeded, so an empty history reads as zero and says so.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SealedBlob } from './crypto';
 import { WrongPassphraseError, decryptWithKey, unlockWithPassphrase } from './crypto';
 import { clearRememberedKeys, loadRememberedKey, storeRememberedKey } from './idb';
@@ -13,11 +13,16 @@ import {
   type Route,
   type SectionId,
 } from './lib/routing';
+import { useLive } from './lib/live';
+import type { EditFields } from './lib/edits';
 import { Header } from './components/Header';
 import { NavBar } from './components/NavBar';
 import { SegmentedControl } from './components/SegmentedControl';
 import { Unlock } from './components/Unlock';
+import { EditSheet } from './components/EditSheet';
+import { SectionOverview } from './components/SectionOverview';
 import { Today } from './tabs/Today';
+import { MapTab } from './tabs/Map';
 import { Work } from './tabs/Work';
 import { Career } from './tabs/Career';
 import { Ayvede } from './tabs/Ayvede';
@@ -29,9 +34,8 @@ import { AiStack } from './tabs/AiStack';
 
 type Phase = 'loading' | 'error' | 'locked' | 'unlocked';
 
-function renderRoute(route: Route, data: LifeData, cryptoKey: CryptoKey | undefined, salt: string) {
-  if (route.zone === 'today') return <Today data={data} cryptoKey={cryptoKey} salt={salt} />;
-  switch (route.section) {
+function renderSection(section: SectionId | undefined, data: LifeData) {
+  switch (section) {
     case 'engagement':
       return <Work data={data.work} />;
     case 'career':
@@ -67,13 +71,17 @@ export default function App() {
   const [blob, setBlob] = useState<SealedBlob | undefined>();
   const [data, setData] = useState<LifeData | undefined>();
   // Kept in state (not just used transiently to decrypt) so Today's Capture
-  // card can encrypt/decrypt notes for as long as the app stays unlocked;
-  // handleLock below clears it and the capture list disappears with it.
+  // card and the edit overlay can encrypt/decrypt for as long as the app stays
+  // unlocked; handleLock below clears it and both disappear with it.
   const [cryptoKey, setCryptoKey] = useState<CryptoKey | undefined>();
   const [fetchError, setFetchError] = useState<string | undefined>();
   const [unlockError, setUnlockError] = useState<string | undefined>();
   const [unlocking, setUnlocking] = useState(false);
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
+  const [editing, setEditing] = useState<string | undefined>();
+
+  const now = useMemo(() => new Date(), []);
+  const live = useLive(data, cryptoKey, blob?.salt ?? '');
 
   useEffect(() => {
     function onHashChange() {
@@ -172,10 +180,34 @@ export default function App() {
     setCryptoKey(undefined);
     setPhase('locked');
     setUnlockError(undefined);
+    setEditing(undefined);
+  }
+
+  /** New items land in the zone you are standing in, then open straight into the editor. */
+  async function handleAdd() {
+    const fields: EditFields = {
+      title: 'New item',
+      zone: route.zone === 'map' || route.zone === 'today' ? 'today' : route.zone,
+      section: route.zone === 'map' || route.zone === 'today' ? undefined : route.section,
+      area: route.section ? SECTION_LABELS[route.section] : 'Inbox',
+      horizon: 'week',
+    };
+    const id = await live.create(fields);
+    setEditing(id);
+  }
+
+  function handlePatch(id: string, fields: EditFields) {
+    live.patch(id, fields);
   }
 
   const sections = SECTIONS_BY_ZONE[route.zone];
   const title = routeTitle(route, data);
+  const editingNode = editing ? live.byId.get(editing) : undefined;
+
+  const sectionNodes = useMemo(() => {
+    if (route.zone === 'today' || route.zone === 'map' || !route.section) return [];
+    return live.nodes.filter((n) => n.zone === route.zone && n.section === route.section);
+  }, [live.nodes, route.zone, route.section]);
 
   return (
     <div className="app-shell">
@@ -198,11 +230,66 @@ export default function App() {
           {phase === 'locked' ? <Unlock onUnlock={handleUnlock} error={unlockError} busy={unlocking} /> : null}
           {phase === 'unlocked' && data ? (
             <div id={`panel-${route.zone}${route.section ? `-${route.section}` : ''}`}>
-              {renderRoute(route, data, cryptoKey, blob?.salt ?? '')}
+              {live.lockedCount > 0 ? (
+                <p className="status-message status-error">
+                  {live.lockedCount} saved change{live.lockedCount === 1 ? '' : 's'} on this device were written under an
+                  older key and cannot be read. They are still stored, not lost.
+                </p>
+              ) : null}
+
+              {route.zone === 'today' ? (
+                <Today
+                  data={data}
+                  cryptoKey={cryptoKey}
+                  salt={blob?.salt ?? ''}
+                  live={live}
+                  now={now}
+                  onOpen={setEditing}
+                />
+              ) : route.zone === 'map' ? (
+                <MapTab
+                  section={route.section}
+                  nodes={live.nodes}
+                  now={now}
+                  onPatch={handlePatch}
+                  onToggle={live.toggleDone}
+                  onOpen={setEditing}
+                />
+              ) : (
+                <>
+                  <SectionOverview
+                    title={title}
+                    nodes={sectionNodes}
+                    now={now}
+                    onToggle={live.toggleDone}
+                    onOpen={setEditing}
+                  />
+                  {renderSection(route.section, data)}
+                </>
+              )}
             </div>
           ) : null}
         </main>
       </div>
+
+      {phase === 'unlocked' ? (
+        <button type="button" className="fab" onClick={handleAdd} aria-label="Add an item">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M10 4v12M4 10h12" strokeLinecap="round" />
+          </svg>
+        </button>
+      ) : null}
+
+      {editingNode ? (
+        <EditSheet
+          key={editingNode.id}
+          node={editingNode}
+          now={now}
+          onSave={handlePatch}
+          onRevert={live.revert}
+          onClose={() => setEditing(undefined)}
+        />
+      ) : null}
     </div>
   );
 }

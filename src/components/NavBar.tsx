@@ -2,10 +2,10 @@ import { ZONE_IDS, ZONE_LABELS, type ZoneId } from '../lib/routing';
 import { NavIcon } from './NavIcons';
 
 /**
- * The 4 top-level zones (Hick's law). Fitts's law: a bottom bar within
- * thumb reach on phone (56px tall targets), a left rail at >=1024px - see
- * global.css for the responsive switch; this component just renders the
- * list once.
+ * The 5 top-level zones (Hick's law - still inside the range where a glance
+ * picks one). Fitts's law: a bottom bar within thumb reach on phone (56px
+ * tall targets), a left rail at >=1024px - see global.css for the responsive
+ * switch; this component just renders the list once.
  */
 export function NavBar({ active, onChange }: { active: ZoneId; onChange: (id: ZoneId) => void }) {
   return (

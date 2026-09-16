@@ -53,6 +53,18 @@ function BuildIcon() {
   );
 }
 
+/** Three linked dots - the board, the roadmap and the graph all live behind this one. */
+function MapIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <circle cx="5" cy="6" r="2.2" />
+      <circle cx="15" cy="9" r="2.2" />
+      <circle cx="7.5" cy="15" r="2.2" />
+      <path d="M6.9 7.2 13.1 8M13.8 10.9 9 13.4M5.6 8.1 7 12.9" />
+    </svg>
+  );
+}
+
 export function NavIcon({ zone }: { zone: ZoneId }) {
   switch (zone) {
     case 'work':
@@ -61,6 +73,8 @@ export function NavIcon({ zone }: { zone: ZoneId }) {
       return <LifeIcon />;
     case 'build':
       return <BuildIcon />;
+    case 'map':
+      return <MapIcon />;
     default:
       return <TodayIcon />;
   }
