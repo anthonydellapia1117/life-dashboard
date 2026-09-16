@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { SectionId } from '../lib/routing';
 import type { EditFields } from '../lib/edits';
-import type { ResolvedNode } from '../lib/live';
+import type { Live, ResolvedNode } from '../lib/live';
 import { Board } from '../components/Board';
 import { Brain } from '../components/Brain';
+import { DataControls } from '../components/DataControls';
 import { Momentum } from '../components/Momentum';
 import { Roadmap } from '../components/Roadmap';
 import { GradeDistribution, ProgressBar } from '../components/Progress';
@@ -22,6 +23,7 @@ import { countNodes, countsByArea } from '../lib/progress';
  */
 export function MapTab({
   section,
+  live,
   nodes,
   now,
   onPatch,
@@ -29,6 +31,7 @@ export function MapTab({
   onOpen,
 }: {
   section: SectionId | undefined;
+  live: Live;
   nodes: ResolvedNode[];
   now: Date;
   onPatch: (id: string, fields: EditFields) => void;
@@ -67,7 +70,10 @@ export function MapTab({
       </div>
 
       {section === 'progress' ? (
-        <Momentum nodes={nodes} now={now} />
+        <>
+          <Momentum nodes={nodes} now={now} />
+          <DataControls live={live} />
+        </>
       ) : (
         <>
           <ProgressBar counts={counts} label={area === 'all' ? 'Everything' : area} />

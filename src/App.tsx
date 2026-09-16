@@ -249,6 +249,7 @@ export default function App() {
               ) : route.zone === 'map' ? (
                 <MapTab
                   section={route.section}
+                  live={live}
                   nodes={live.nodes}
                   now={now}
                   onPatch={handlePatch}

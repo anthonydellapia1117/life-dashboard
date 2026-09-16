@@ -667,3 +667,13 @@ tr:last-child td { border-bottom: none; }
 .sheet-actions { display: flex; gap: var(--space-2); }
 .sheet-actions .btn { flex: 1; }
 .sheet-actions-quiet { border-top: 1px solid var(--border); padding-top: var(--space-3); }
+
+/* Getting edits off the device - the only path decrypted content takes out. */
+.datactl { margin-top: var(--space-8); border-top: 1px solid var(--border); padding-top: var(--space-4); }
+.datactl-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.datactl-file { display: none; }
+.datactl-danger { margin-top: var(--space-6); place-items: center; }
+.datactl-warn { font-size: var(--text-xs-size); color: var(--text-2); }
+.btn-danger { background: var(--critical); border-color: var(--critical); color: var(--surface); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.datactl-status { margin-top: var(--space-3); font-size: var(--text-xs-size); color: var(--text-2); }
