@@ -5,6 +5,7 @@ import { groupUpcoming } from '../lib/grouping';
 import { compareByGrade, gradeOf, isPressing } from '../lib/grade';
 import type { Live } from '../lib/live';
 import { countNodes } from '../lib/progress';
+import { TRACK_META, partitionByTrack } from '../lib/track';
 import { Agenda } from '../components/Agenda';
 import { Alerts } from '../components/Alerts';
 import { Balance } from '../components/Balance';
@@ -23,6 +24,12 @@ import { GradeDistribution, ProgressBar } from '../components/Progress';
  *
  * Focus holds three items and no more. The whole point of a ranking is that
  * it ends - a list of everything, sorted, is still a list of everything.
+ *
+ * Focus and the hero figure draw only from what is YOURS (src/lib/track.ts):
+ * something you are waiting on, or that may already be done, or that has sat
+ * there since last year, is not work you can do next. Those get their own
+ * sections below, in that order, so none of them is lost and none of them
+ * competes with the three things that actually move.
  */
 export function Today({
   data,
@@ -52,16 +59,24 @@ export function Today({
     () => actionable.filter((n) => !n.done).sort((a, b) => compareByGrade(a, b, now)),
     [actionable, now],
   );
-  const focus = open.slice(0, 3);
-  const rest = open.slice(3);
+  const { mine, tracks } = useMemo(() => partitionByTrack(open), [open]);
+  const focus = mine.slice(0, 3);
+  const rest = mine.slice(3);
   const done = useMemo(() => actionable.filter((n) => n.done), [actionable]);
 
-  const pressing = open.filter((n) => isPressing(gradeOf({ due: n.due, horizon: n.horizon, done: false }, now))).length;
+  const pressing = mine.filter((n) => isPressing(gradeOf({ due: n.due, horizon: n.horizon, done: false }, now))).length;
   const counts = countNodes(actionable);
 
+  // Every slice that carries actions, not just the top-level list - the UNICO
+  // and Work items live in their own slices and Balance has to see them too.
+  const allActions = useMemo(
+    () => [...(data.actions ?? []), ...(data.work?.actionItems ?? []), ...(data.unico?.actionItems ?? [])],
+    [data.actions, data.work?.actionItems, data.unico?.actionItems],
+  );
+
   const days = groupUpcoming(calendar, now, 14);
-  const totals = computeBalanceTotals(data.actions ?? [], calendar, now, 14);
-  const areas = computeAreaBreakdown(data.actions ?? []);
+  const totals = computeBalanceTotals(allActions, calendar, now, 14);
+  const areas = computeAreaBreakdown(allActions);
 
   return (
     <div className="tab-page today-page">
@@ -97,6 +112,16 @@ export function Today({
             <h2 className="section-heading">Up next</h2>
             <NodeList nodes={rest} now={now} onToggle={live.toggleDone} onOpen={onOpen} empty="Nothing behind Focus." />
           </section>
+
+          {tracks.map(({ track, items }) => (
+            <section aria-label={TRACK_META[track].heading} key={track}>
+              <h2 className="section-heading">
+                {TRACK_META[track].heading} <span className="section-count">{items.length}</span>
+              </h2>
+              <p className="caption">{TRACK_META[track].caption}</p>
+              <NodeList nodes={items} now={now} onToggle={live.toggleDone} onOpen={onOpen} />
+            </section>
+          ))}
 
           {done.length > 0 ? (
             <Disclosure summary={`${done.length} done`}>

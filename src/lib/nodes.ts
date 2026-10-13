@@ -68,6 +68,8 @@ export interface LifeNode {
   due?: string;
   /** 'now' | 'week' | 'later' | 'routine' when the row has one. */
   horizon?: string;
+  /** Track from the row ('waiting' | 'unconfirmed' | 'review'), when it has one. Absent means yours to do. */
+  track?: string;
   /** Free-text status string from the row, when it has one. */
   status?: string;
   /** PillTone from the row, when it has one. */
@@ -125,6 +127,7 @@ interface NodeFields {
   detail?: string;
   due?: string;
   horizon?: string;
+  track?: string;
   status?: string;
   pill?: string;
   baseDone?: boolean;
@@ -151,6 +154,7 @@ function makeNode(
     section: place.section,
     due: fields.due,
     horizon: fields.horizon,
+    track: fields.track,
     status: fields.status,
     pill: fields.pill,
     baseDone: fields.baseDone ?? false,
@@ -173,6 +177,7 @@ function fromActionItem(source: string, place: Place) {
       detail: item.detail,
       due: toDue(item.due),
       horizon: item.horizon,
+      track: item.track,
     });
 }
 

@@ -1,5 +1,6 @@
 import { gradeOf } from '../lib/grade';
 import type { ResolvedNode } from '../lib/live';
+import { trackLabel } from '../lib/track';
 import { GradeChip } from './GradeIcon';
 
 /**
@@ -22,6 +23,8 @@ export function NodeRow({
   showArea?: boolean;
 }) {
   const grade = gradeOf({ due: node.due, horizon: node.horizon, done: node.done }, now);
+  // Whose move it is, beside when it is due. Two words, never one colour.
+  const track = trackLabel(node.track);
 
   return (
     <div className={`node-row${node.done ? ' node-done' : ''}`}>
@@ -47,6 +50,7 @@ export function NodeRow({
         {node.detail ? <span className="node-detail">{node.detail}</span> : null}
         <span className="node-meta">
           <GradeChip grade={grade} short />
+          {track ? <span className="node-track">{track}</span> : null}
           {showArea ? <span className="node-area">{node.area}</span> : null}
           {node.note ? <span className="node-note-flag">Note</span> : null}
           {node.edited ? <span className="node-edited">Edited</span> : null}

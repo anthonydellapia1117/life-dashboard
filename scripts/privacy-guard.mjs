@@ -55,6 +55,9 @@ export const STRUCTURAL_SKIP_KEYS = new Set([
   'pill',
   'pillLabel',
   'horizon',
+  // Whose move it is - an enum from src/lib/track.ts, same kind of structural
+  // word as horizon, and its three values are spelled out in that source file.
+  'track',
   'severity',
   'visibility',
   'area',

@@ -1,4 +1,5 @@
 import type { ActionItem, Horizon } from '../types';
+import { TRACK_META } from '../lib/track';
 import { EmptyState } from './ui';
 import { StatusIcon, type StatusTone } from './StatusIcon';
 
@@ -35,6 +36,7 @@ export function ActionList({ actions }: { actions: ActionItem[] | undefined }) {
                 <div className="action-title">{action.title}</div>
                 {action.detail ? <div className="action-meta">{action.detail}</div> : null}
               </div>
+              {action.track ? <div className="node-track">{TRACK_META[action.track].label}</div> : null}
               <div className="action-area">{action.area}</div>
             </div>
           ))}

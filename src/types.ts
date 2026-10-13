@@ -44,6 +44,22 @@ export interface Alert {
   text: string;
 }
 
+/**
+ * Whose move it is. Absent means yours, right now - the default and the only
+ * thing that belongs in Focus.
+ *
+ * This says nothing about WHEN - that is src/lib/grade.ts and only that. An
+ * item can be waiting on someone and overdue at the same time; the two read
+ * as one line together ("Overdue - Waiting") and neither replaces the other.
+ */
+export type Track =
+  /** Blocked on another person. Chasing is the work, not doing it. */
+  | 'waiting'
+  /** You or a tool did it, but nothing confirms it landed. Verify, do not redo. */
+  | 'unconfirmed'
+  /** Parked. Old, optional or possibly stale - decide if it is still real. */
+  | 'review';
+
 export interface ActionItem {
   id: string;
   title: string;
@@ -53,6 +69,8 @@ export interface ActionItem {
   area: string;
   /** Optional ISO date this action is anchored to, for future sorting. */
   due?: string;
+  /** Whose move it is. Absent means yours. Never a statement about timing. */
+  track?: Track;
 }
 
 export type CalendarStatus = 'done' | 'active' | 'urgent' | 'warning' | 'upcoming';

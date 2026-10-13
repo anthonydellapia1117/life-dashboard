@@ -234,6 +234,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   font-size: 0.8125rem; line-height: var(--text-xs-line); font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: var(--space-6) 0 var(--space-2);
 }
+/* The count beside a bucket heading - a figure, not a badge. */
+.section-count { font-weight: 400; color: var(--text-3); opacity: 0.75; }
 .today-main > section, .today-side > section { margin-bottom: var(--space-6); }
 .grid { display: grid; gap: var(--space-4); margin-bottom: var(--space-4); }
 @media (min-width: 640px) { .grid.cols-2 { grid-template-columns: 1fr 1fr; } }
@@ -515,7 +517,7 @@ tr:last-child td { border-bottom: none; }
 .node-done .node-title { color: var(--text-3); text-decoration: line-through; text-decoration-thickness: 1px; }
 .node-detail { font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-3); }
 .node-meta { display: flex; flex-wrap: wrap; place-items: center; gap: var(--space-1) var(--space-2); margin-top: var(--space-1); }
-.node-area, .node-note-flag, .node-edited {
+.node-area, .node-note-flag, .node-edited, .node-track {
   font-size: 0.75rem; line-height: 1.1rem; color: var(--text-3);
   padding: 0; border: none; border-radius: 0;
 }
