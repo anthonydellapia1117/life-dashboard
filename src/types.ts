@@ -388,6 +388,8 @@ export interface LifeData {
   aiStack?: AiStackData;
   /** Life OS web, tile copy and folder map - sealed in from data/lifeos.json (src/lib/lifeosGraph.ts). */
   lifeos?: import('./lib/lifeosGraph').LifeOsData;
+  /** Claude tab feed: chats, Cowork, Code sessions, scheduled tasks - sealed in from data/claude.json (src/lib/claude.ts). */
+  claude?: import('./lib/claude').ClaudeData;
 }
 
 // Zone/section IA (routing, labels, legacy-hash map) lives in

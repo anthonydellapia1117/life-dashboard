@@ -138,7 +138,7 @@ Zones and sections (`src/lib/routing.ts`), in nav order:
   (`data.unico`).
 - **Build** - Projects (`data.projects`), AI stack (`data.aiStack`).
 - **Map** - Board, Roadmap, Brain, Progress.
-- **Claude** (`#claude`) - a placeholder tab (`src/tabs/Claude.tsx`) for the next build.
+- **Claude** (`#claude`) - Claude work (`data.claude`, `src/tabs/Claude.tsx`). See Claude tab below.
 
 A zone named with no section opens its first. Legacy hash map (old
 flat tab -> new path): `#overview`->`#today`, `#work`->`#work/engagement`,
@@ -375,6 +375,32 @@ The web's nodes, links, tile copy and folder map live in `data/lifeos.json`
 (gitignored). `npm run seal` folds it into the sealed blob as `lifeos`, so it
 ships encrypted like everything else; without it the tab shows hubs and
 generic tile copy.
+
+## Claude tab
+
+`src/tabs/Claude.tsx`, pure helpers in `src/lib/claude.ts`. A KPI strip
+(Chats, Cowork tasks, Code sessions on this Mac, Scheduled tasks active,
+Unread), then three columns: Scheduled tasks 280px, Claude fluid, Code
+320px. Under 900px they stack Claude, Code, Scheduled tasks.
+
+- **Scheduled tasks** - a 24h / 3d / 7d / 2w / 1m window (default 7d, kept in
+  localStorage `lifeos.claude.window`). Active above Paused. A task that
+  neither ran nor is due inside the window is dimmed. No run history yet
+  reads "last run unknown".
+- **Claude** - Chat and Cowork streams, newest first by `updated`, 12 rows
+  each with a "+N more" expander; "Show all details" lifts every cap on the
+  tab. Unread is `updated` after localStorage `lifeos.claude.lastSeen` (a
+  timestamp, never content), seeded on the first visit with the feed's
+  generated time. Unread rows get the highlighter: an orange tint (18% light,
+  24% dark), a 3px orange bar and a semibold title. "Mark all read" sets
+  lastSeen to now.
+- **Code** - Latest (each project's recent titles at its last time, 15 rows)
+  or By project (sessions, last time, three recent titles), cloud sessions
+  in their own group, the feed's note underneath.
+
+The feed is `data/claude.json` (gitignored), built on the Mac by the
+claude-dashboard `build_data.py` and folded in by `npm run seal` as
+`claude`. Its `refresh.sh` rebuilds, seals and pushes the blob.
 
 ## Device lock
 

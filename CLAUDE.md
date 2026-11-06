@@ -16,7 +16,7 @@ Rules for any agent working in this repo.
 
 ## Where the data lives
 
-`data/life.json` is the base snapshot, sealed on the Mac. `data/lifeos.json` (the Life OS web, tile copy and folder map, also gitignored) is folded into the same sealed blob as `lifeos` by `npm run seal`. The overlay is per device and is not in the repo. A device's edits reach the Mac only through the app's export, so re-sealing does not pick them up on its own - that is a deliberate consequence of having no server, not a bug to paper over.
+`data/life.json` is the base snapshot, sealed on the Mac. `data/lifeos.json` (the Life OS web, tile copy and folder map, also gitignored) is folded into the same sealed blob as `lifeos` by `npm run seal`, and `data/claude.json` (the Claude tab feed, also gitignored) as `claude`. The overlay is per device and is not in the repo. A device's edits reach the Mac only through the app's export, so re-sealing does not pick them up on its own - that is a deliberate consequence of having no server, not a bug to paper over.
 
 ## Where things live
 
