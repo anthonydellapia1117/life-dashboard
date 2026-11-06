@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { SealedBlob } from './crypto';
 import { WrongPassphraseError, decryptWithKey, unlockWithPassphrase } from './crypto';
 import { clearRememberedKeys, loadRememberedKey } from './idb';
@@ -26,6 +27,7 @@ import {
   type SectionId,
 } from './lib/routing';
 import { useLive } from './lib/live';
+import { applyWorld, worldFor } from './lib/world';
 import type { EditFields } from './lib/edits';
 import { Header } from './components/Header';
 import { TopNav } from './components/TopNav';
@@ -128,6 +130,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  // The colour world follows the route: html[data-world] plus the theme-color metas.
+  useEffect(() => {
+    applyWorld(document, phase === 'unlocked' ? worldFor(route.zone, route.section) : 'neutral');
+  }, [route.zone, route.section, phase]);
+
   useEffect(() => {
     // Keep the address bar canonical (a legacy hash like "#work" becomes
     // "#work/engagement") without adding a history entry or re-firing hashchange.
@@ -190,7 +197,19 @@ export default function App() {
 
   function goToZone(id: ZoneId) {
     const sections = SECTIONS_BY_ZONE[id];
-    setRoute(sections.length > 0 ? { zone: id, section: sections[0] } : { zone: id });
+    const next: Route = sections.length > 0 ? { zone: id, section: sections[0] } : { zone: id };
+    // A 250 ms cross-fade between worlds where the browser has View Transitions
+    // and the reader has not asked for reduced motion; a plain swap otherwise.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (typeof doc.startViewTransition === 'function' && !reduce) {
+      doc.startViewTransition(() => {
+        flushSync(() => setRoute(next));
+        applyWorld(document, worldFor(next.zone, next.section));
+      });
+      return;
+    }
+    setRoute(next);
   }
 
   function goToSection(section: SectionId) {

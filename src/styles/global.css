@@ -1,3 +1,10 @@
+/* Display face: Space Grotesk 500-700, self-hosted (SIL OFL, public/fonts/OFL.txt), latin subset. Body stays the system stack. */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+  font-weight: 500 700; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 /* Tokens - light default, dark via prefers-color-scheme (a chosen palette, not an auto-invert). Base unit 4px. */
 /* Type tokens are rem (16px root): iOS text-size settings scale the whole app. Spacing stays px. */
 :root {
@@ -16,7 +23,7 @@
    * --surface, --text-1...) are kept as aliases so every existing rule follows.
    */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Inter, system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Inter, system-ui, sans-serif;
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Inter, system-ui, sans-serif;
   --display-weight: 700; --display-tracking: -0.022em;
   /* Apple type scale, size / weight. */
   --t-large: 34px; --t-title: 28px; --t-title2: 22px; --t-title3: 20px; --t-headline: 17px;
@@ -1114,3 +1121,219 @@ a.cl-title:hover { color: var(--blue); }
 .cl-task.is-outside:not(.is-match):not(.is-dimmed) { opacity: 0.45; }
 .cl-task-name { font: 500 var(--t-subhead) / 20px var(--font-sans); color: var(--label); }
 .cl-task-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--space-3); font-size: var(--t-footnote); line-height: 18px; color: var(--label-2); }
+
+/* ==========================================================================
+   Colour worlds (src/lib/world.ts sets html[data-world]). Each world sets the
+   --world-* tokens; one mapping rule below points the semantic tokens every
+   component already reads at them, and one more re-scopes ink inside card
+   containers. Grade (--grade-*) and bucket (--bucket-*) colours are never
+   touched here: colour means the same thing on every tab.
+   Brand hexes are used as given; every tint is a color-mix of them.
+   ========================================================================== */
+:root {
+  /* neutral: the Apple system, untouched. The band is a plain card. */
+  --world-band: var(--card); --world-band-ink: var(--label); --world-band-rule: transparent;
+  --world-pill: var(--card); --world-pill-ink: var(--label);
+}
+
+/* work - brand purple ground, white ink, white cards with purple accents. */
+:root[data-world='work'] {
+  --world-ground: #4F2D7F; --world-ground-ink: #FFFFFF; --world-ground-ink-2: color-mix(in srgb, #FFFFFF 80%, #4F2D7F);
+  --world-line: color-mix(in srgb, #FFFFFF 24%, transparent); --world-fill: color-mix(in srgb, #FFFFFF 16%, transparent);
+  --world-accent: #FFFFFF; --world-on-accent: #4F2D7F;
+  --world-card: #FFFFFF; --world-card-ink: #000000; --world-card-ink-2: #6C6C70;
+  --world-card-line: rgba(60, 60, 67, 0.29); --world-card-fill: color-mix(in srgb, #4F2D7F 7%, #FFFFFF);
+  --world-card-accent: #4F2D7F; --world-card-on-accent: #FFFFFF;
+  --world-band: color-mix(in srgb, #4F2D7F 78%, #000); --world-band-ink: #FFFFFF; --world-band-rule: transparent;
+  --world-pill: #FFFFFF; --world-pill-ink: #4F2D7F;
+}
+/* ayvede - the Ayvede token set. One palette in both modes: it has no light variant. */
+:root[data-world='ayvede'] {
+  --world-ground: #0b1120; --world-ground-ink: #e8ecf1; --world-ground-ink-2: #7a8ba3;
+  --world-line: #1e2d44; --world-fill: #161f30;
+  --world-accent: #2EC4A8; --world-on-accent: #0b1120;
+  --world-card: #101828; --world-card-ink: #e8ecf1; --world-card-ink-2: #7a8ba3;
+  --world-card-line: #1e2d44; --world-card-fill: #161f30;
+  --world-card-accent: #2EC4A8; --world-card-on-accent: #0b1120;
+  --world-band: #101828; --world-band-ink: #FFFFFF; --world-band-rule: #C7A26B;
+  --world-pill: #FFFFFF; --world-pill-ink: #0b1120;
+  --red: #ef4444;
+  color-scheme: dark;
+}
+/* life - warm yellow ground, dark ink. */
+:root[data-world='life'] {
+  --world-ground: #FFF1B8; --world-ground-ink: #1F1A0E; --world-ground-ink-2: #5C5230;
+  --world-line: color-mix(in srgb, #1F1A0E 18%, transparent); --world-fill: color-mix(in srgb, #1F1A0E 8%, transparent);
+  --world-accent: #8A5A00; --world-on-accent: #FFFFFF;
+  --world-card: #FFFFFF; --world-card-ink: #1F1A0E; --world-card-ink-2: #5C5230;
+  --world-card-line: color-mix(in srgb, #1F1A0E 16%, transparent); --world-card-fill: color-mix(in srgb, #FFF1B8 55%, #FFFFFF);
+  --world-card-accent: #8A5A00; --world-card-on-accent: #FFFFFF;
+  --world-band: #FFE48A; --world-band-ink: #1F1A0E; --world-band-rule: transparent;
+  --world-pill: #FFFFFF; --world-pill-ink: #1F1A0E;
+}
+/* build - blueprint: cool graphite on a drafting grid, links underlined. */
+:root[data-world='build'] {
+  --world-ground: #E6ECF4; --world-ground-ink: #1F2733; --world-ground-ink-2: #4C5868;
+  --world-line: color-mix(in srgb, #1F2733 18%, transparent); --world-fill: color-mix(in srgb, #1F2733 8%, transparent);
+  --world-accent: #1F2733; --world-on-accent: #FFFFFF;
+  --world-card: #FFFFFF; --world-card-ink: #1F2733; --world-card-ink-2: #4C5868;
+  --world-card-line: color-mix(in srgb, #1F2733 14%, transparent); --world-card-fill: color-mix(in srgb, #E6ECF4 60%, #FFFFFF);
+  --world-card-accent: #1F2733; --world-card-on-accent: #FFFFFF;
+  --world-band: color-mix(in srgb, #1F2733 10%, #E6ECF4); --world-band-ink: #1F2733; --world-band-rule: color-mix(in srgb, #1F2733 30%, transparent);
+  --world-pill: #FFFFFF; --world-pill-ink: #1F2733;
+  --world-grid: color-mix(in srgb, #1F2733 6%, transparent);
+}
+/* claude - Claude's own palette: cream ground, orange band, dark ink. */
+:root[data-world='claude'] {
+  --world-ground: #faf9f5; --world-ground-ink: #141413;
+  /* Mid Gray #b0aea5 measures about 2.2:1 on the cream ground, too faint for captions, so light secondary ink mixes it with Dark. */
+  --world-ground-ink-2: color-mix(in srgb, #141413 62%, #b0aea5);
+  --world-line: #e8e6dc; --world-fill: color-mix(in srgb, #e8e6dc 60%, transparent);
+  --world-accent: color-mix(in srgb, #d97757 70%, #141413); --world-on-accent: #faf9f5;
+  --world-card: #FFFFFF; --world-card-ink: #141413; --world-card-ink-2: color-mix(in srgb, #141413 62%, #b0aea5);
+  --world-card-line: #e8e6dc; --world-card-fill: #faf9f5;
+  --world-card-accent: color-mix(in srgb, #d97757 70%, #141413); --world-card-on-accent: #faf9f5;
+  --world-band: #d97757; --world-band-ink: #141413; --world-band-rule: transparent;
+  --world-pill: #FFFFFF; --world-pill-ink: #141413;
+  --orange: #d97757; --unread-tint: color-mix(in srgb, #d97757 14%, transparent);
+}
+
+/* Dark steps: chosen per world, not an automatic flip. Repeated for data-theme='dark'. */
+@media (prefers-color-scheme: dark) {
+  :root[data-world='work']:not([data-theme='light']) {
+    --world-ground: color-mix(in srgb, #4F2D7F 62%, #000); --world-ground-ink-2: color-mix(in srgb, #FFFFFF 78%, #4F2D7F);
+    --world-card: color-mix(in srgb, #4F2D7F 22%, #1C1C1E); --world-card-ink: #F5F5F7; --world-card-ink-2: color-mix(in srgb, #F5F5F7 70%, #1C1C1E);
+    --world-card-line: color-mix(in srgb, #FFFFFF 16%, transparent); --world-card-fill: color-mix(in srgb, #4F2D7F 32%, #1C1C1E);
+    --world-card-accent: color-mix(in srgb, #4F2D7F 35%, #FFF); --world-card-on-accent: #1C1C1E;
+    --world-band: color-mix(in srgb, #4F2D7F 80%, #000);
+  }
+  :root[data-world='life']:not([data-theme='light']) {
+    --world-ground: #2A2410; --world-ground-ink: #FFF4CC; --world-ground-ink-2: #C9BB8A;
+    --world-line: color-mix(in srgb, #FFF4CC 18%, transparent); --world-fill: color-mix(in srgb, #FFF4CC 10%, transparent);
+    --world-accent: #F5C64A; --world-on-accent: #2A2410;
+    --world-card: #3A3218; --world-card-ink: #FFF4CC; --world-card-ink-2: #C9BB8A;
+    --world-card-line: color-mix(in srgb, #FFF4CC 14%, transparent); --world-card-fill: color-mix(in srgb, #FFF4CC 8%, #3A3218);
+    --world-card-accent: #F5C64A; --world-card-on-accent: #2A2410;
+    --world-band: color-mix(in srgb, #F5C64A 24%, #2A2410); --world-band-ink: #FFF4CC;
+    --world-pill: #F5C64A; --world-pill-ink: #2A2410;
+  }
+  :root[data-world='build']:not([data-theme='light']) {
+    --world-ground: #1C222B; --world-ground-ink: #E6ECF4; --world-ground-ink-2: #9AA7B8;
+    --world-line: color-mix(in srgb, #E6ECF4 16%, transparent); --world-fill: color-mix(in srgb, #E6ECF4 10%, transparent);
+    --world-accent: #E6ECF4; --world-on-accent: #1C222B;
+    --world-card: #252D38; --world-card-ink: #E6ECF4; --world-card-ink-2: #9AA7B8;
+    --world-card-line: color-mix(in srgb, #E6ECF4 14%, transparent); --world-card-fill: color-mix(in srgb, #E6ECF4 6%, #252D38);
+    --world-card-accent: #E6ECF4; --world-card-on-accent: #1C222B;
+    --world-band: #252D38; --world-band-ink: #E6ECF4; --world-band-rule: color-mix(in srgb, #E6ECF4 24%, transparent);
+    --world-pill: #E6ECF4; --world-pill-ink: #1C222B;
+    --world-grid: color-mix(in srgb, #FFFFFF 8%, transparent);
+  }
+  :root[data-world='claude']:not([data-theme='light']) {
+    --world-ground: #141413; --world-ground-ink: #faf9f5; --world-ground-ink-2: #b0aea5;
+    --world-line: color-mix(in srgb, #e8e6dc 20%, transparent); --world-fill: color-mix(in srgb, #e8e6dc 12%, transparent);
+    --world-accent: #d97757; --world-on-accent: #141413;
+    --world-card: color-mix(in srgb, #141413 92%, #faf9f5); --world-card-ink: #faf9f5; --world-card-ink-2: #b0aea5;
+    --world-card-line: color-mix(in srgb, #e8e6dc 20%, transparent); --world-card-fill: color-mix(in srgb, #141413 84%, #faf9f5);
+    --world-card-accent: #d97757; --world-card-on-accent: #141413;
+    --world-pill: #faf9f5; --world-pill-ink: #141413;
+    --unread-tint: color-mix(in srgb, #d97757 18%, transparent);
+  }
+}
+:root[data-world='work'][data-theme='dark'] {
+  --world-ground: color-mix(in srgb, #4F2D7F 62%, #000); --world-ground-ink-2: color-mix(in srgb, #FFFFFF 78%, #4F2D7F);
+  --world-card: color-mix(in srgb, #4F2D7F 22%, #1C1C1E); --world-card-ink: #F5F5F7; --world-card-ink-2: color-mix(in srgb, #F5F5F7 70%, #1C1C1E);
+  --world-card-line: color-mix(in srgb, #FFFFFF 16%, transparent); --world-card-fill: color-mix(in srgb, #4F2D7F 32%, #1C1C1E);
+  --world-card-accent: color-mix(in srgb, #4F2D7F 35%, #FFF); --world-card-on-accent: #1C1C1E;
+  --world-band: color-mix(in srgb, #4F2D7F 80%, #000);
+}
+:root[data-world='life'][data-theme='dark'] {
+  --world-ground: #2A2410; --world-ground-ink: #FFF4CC; --world-ground-ink-2: #C9BB8A;
+  --world-line: color-mix(in srgb, #FFF4CC 18%, transparent); --world-fill: color-mix(in srgb, #FFF4CC 10%, transparent);
+  --world-accent: #F5C64A; --world-on-accent: #2A2410;
+  --world-card: #3A3218; --world-card-ink: #FFF4CC; --world-card-ink-2: #C9BB8A;
+  --world-card-line: color-mix(in srgb, #FFF4CC 14%, transparent); --world-card-fill: color-mix(in srgb, #FFF4CC 8%, #3A3218);
+  --world-card-accent: #F5C64A; --world-card-on-accent: #2A2410;
+  --world-band: color-mix(in srgb, #F5C64A 24%, #2A2410); --world-band-ink: #FFF4CC;
+  --world-pill: #F5C64A; --world-pill-ink: #2A2410;
+}
+:root[data-world='build'][data-theme='dark'] {
+  --world-ground: #1C222B; --world-ground-ink: #E6ECF4; --world-ground-ink-2: #9AA7B8;
+  --world-line: color-mix(in srgb, #E6ECF4 16%, transparent); --world-fill: color-mix(in srgb, #E6ECF4 10%, transparent);
+  --world-accent: #E6ECF4; --world-on-accent: #1C222B;
+  --world-card: #252D38; --world-card-ink: #E6ECF4; --world-card-ink-2: #9AA7B8;
+  --world-card-line: color-mix(in srgb, #E6ECF4 14%, transparent); --world-card-fill: color-mix(in srgb, #E6ECF4 6%, #252D38);
+  --world-card-accent: #E6ECF4; --world-card-on-accent: #1C222B;
+  --world-band: #252D38; --world-band-ink: #E6ECF4; --world-band-rule: color-mix(in srgb, #E6ECF4 24%, transparent);
+  --world-pill: #E6ECF4; --world-pill-ink: #1C222B;
+  --world-grid: color-mix(in srgb, #FFFFFF 8%, transparent);
+}
+:root[data-world='claude'][data-theme='dark'] {
+  --world-ground: #141413; --world-ground-ink: #faf9f5; --world-ground-ink-2: #b0aea5;
+  --world-line: color-mix(in srgb, #e8e6dc 20%, transparent); --world-fill: color-mix(in srgb, #e8e6dc 12%, transparent);
+  --world-accent: #d97757; --world-on-accent: #141413;
+  --world-card: color-mix(in srgb, #141413 92%, #faf9f5); --world-card-ink: #faf9f5; --world-card-ink-2: #b0aea5;
+  --world-card-line: color-mix(in srgb, #e8e6dc 20%, transparent); --world-card-fill: color-mix(in srgb, #141413 84%, #faf9f5);
+  --world-card-accent: #d97757; --world-card-on-accent: #141413;
+  --world-pill: #faf9f5; --world-pill-ink: #141413;
+  --unread-tint: color-mix(in srgb, #d97757 18%, transparent);
+}
+
+/* The mapping: every non-neutral world drives the semantic tokens. (0,3,0) beats the dark-mode root block. */
+:root[data-world]:not([data-world='neutral']) {
+  --background: var(--world-ground); --bg: var(--world-ground);
+  --card: var(--world-card); --surface: var(--world-card); --surface-2: var(--world-card-fill);
+  --label: var(--world-ground-ink); --text-1: var(--world-ground-ink);
+  --label-2: var(--world-ground-ink-2); --text-2: var(--world-ground-ink-2); --text-3: var(--world-ground-ink-2);
+  --separator: var(--world-line); --border: var(--world-line); --rule-soft: var(--world-line);
+  --fill: var(--world-fill);
+  --blue: var(--world-accent); --accent: var(--world-accent); --on-accent: var(--world-on-accent);
+  --glass: color-mix(in srgb, var(--world-ground) 72%, transparent);
+}
+/* Inside a card the ink, lines and accent switch to the card steps, so component CSS recolours with no per-component edit. */
+:root[data-world]:not([data-world='neutral']) :is(.card, .group, .glance-kpi, .eis-kpi, .tile, .stat-tile, table, .node-list,
+  .dist, .capture-card, .datactl, .momentum-card, .eis-quad, .eis-day, .project-card, .brain-detail, .sheet, .web,
+  .agenda-day, .alert, .focus-item, .unlock-card, .kpi-strip) {
+  --label: var(--world-card-ink); --text-1: var(--world-card-ink);
+  --label-2: var(--world-card-ink-2); --text-2: var(--world-card-ink-2); --text-3: var(--world-card-ink-2);
+  --separator: var(--world-card-line); --border: var(--world-card-line); --rule-soft: var(--world-card-line);
+  --fill: var(--world-card-fill); --background: var(--world-card-fill);
+  --blue: var(--world-card-accent); --accent: var(--world-card-accent); --on-accent: var(--world-card-on-accent);
+  color: var(--world-card-ink);
+}
+:root[data-world]:not([data-world='neutral']) :is(.btn-primary, .btn-tinted[aria-pressed='true'], .fab, .unlock-button, .capture-save) { color: var(--on-accent); }
+:root[data-world='build'] a { text-decoration: underline; text-underline-offset: 2px; }
+:root[data-world='build'] :is(.seg-item, .segmented-item, .topnav-mark, .glance-kpi, .tile) { text-decoration: none; }
+:root[data-world='build'] body {
+  background-image:
+    repeating-linear-gradient(0deg, var(--world-grid) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, var(--world-grid) 0 1px, transparent 1px 24px);
+  background-attachment: fixed;
+}
+
+/* Nav: glass kept, tinted toward the active world's band. Active pills invert on the worlds. */
+.topnav { background: color-mix(in srgb, var(--world-band) 55%, var(--glass)); color: var(--label); }
+:root[data-world]:not([data-world='neutral']) :is(.seg-item.is-active, .segmented-item.active) {
+  background: var(--world-pill); color: var(--world-pill-ink);
+}
+
+/* Header band: the tab name in the display face on the world band, the half-second answer to "which tab am I on". */
+.app-header {
+  margin: var(--space-4) max(var(--space-4), env(safe-area-inset-right)) var(--space-3) max(var(--space-4), env(safe-area-inset-left));
+  min-height: 44px; padding: var(--space-3) var(--space-4);
+  background: var(--world-band); color: var(--world-band-ink);
+  border-radius: var(--radius-l); border-bottom: 2px solid var(--world-band-rule);
+}
+.topnav ~ .app-body .app-header { padding-top: var(--space-3); }
+.app-header .app-title { color: var(--world-band-ink); font-family: var(--font-display); }
+.app-header .app-header-meta { color: color-mix(in srgb, var(--world-band-ink) 72%, var(--world-band)); }
+.app-header .lock-button { background: color-mix(in srgb, var(--world-band-ink) 12%, transparent); color: var(--world-band-ink); }
+
+/* Transitions: background, colour and border only, on the few surfaces that carry the world. */
+html, body, .topnav, .app-header, .card, .group, .glance-kpi, .tile {
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease;
+}
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 250ms; }
+@media (prefers-reduced-motion: reduce) {
+  html, body, .topnav, .app-header, .card, .group, .glance-kpi, .tile { transition: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}

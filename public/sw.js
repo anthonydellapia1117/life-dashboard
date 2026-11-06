@@ -25,13 +25,16 @@ const BUILD_ID = '__SW_BUILD_ID__';
 const CACHE_NAME = `life-dashboard-${BUILD_ID}`;
 const DATA_SUFFIX = 'data/life.enc.json';
 const SHELL_URL = new URL('.', self.location.href).href;
+// The display face, precached so headings and numbers keep their face offline.
+const FONT_URLS = [new URL('fonts/space-grotesk-latin.woff2', self.location.href).href];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       try {
-        await cache.add(SHELL_URL);
+        // Each one on its own, so a missing font never costs the shell.
+        await Promise.allSettled([SHELL_URL, ...FONT_URLS].map((url) => cache.add(url)));
       } catch {
         // Offline on first install, or the shell isn't reachable yet - not
         // fatal, the shell gets cached on the first successful navigation.
