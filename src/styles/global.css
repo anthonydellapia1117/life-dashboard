@@ -973,7 +973,7 @@ input[type='checkbox'] { accent-color: var(--blue); }
 
 /* ---------- Life OS tab ---------- */
 .lifeos-page > section { margin-bottom: var(--space-4); }
-.lifeos-page > section:first-child .title2, .lifeos-page .hero3d .title2 { margin-top: 0; }
+.lifeos-page > section:first-child .title2, .lifeos-page .hero-buckets .title2 { margin-top: 0; }
 
 /* Today at a glance: three KPIs and the next three calendar items, all links to #today. */
 .glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
@@ -988,40 +988,87 @@ input[type='checkbox'] { accent-color: var(--blue); }
   .glance-cal { grid-column: auto; }
 }
 
-/* Hero: six 3D glass buckets. The one bold element on the page. */
-.hero3d { background: var(--card); border-radius: var(--radius-l); padding: var(--space-4); overflow: hidden; }
-.hero3d-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
+/* Hero: six bucket tiles. The number is the tile, in its bucket colour. */
+.hero-buckets { background: var(--card); border-radius: var(--radius-l); padding: var(--space-4); }
+.hero-buckets-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
 .seg-inline { margin: 0; }
-.b3d { position: relative; height: 280px; touch-action: pan-y; }
-@media (max-width: 640px) { .b3d { height: 200px; } }
-.b3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
-.b3d-label, .b3d-cap { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform; }
-.b3d-label {
-  display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 10px; border-radius: var(--radius-s);
-  background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
-  border: 0.5px solid var(--separator); opacity: 0; transition: opacity 0.15s; white-space: nowrap;
+.bucket-heroes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+@media (min-width: 1024px) { .bucket-heroes { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .bucket-heroes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.bucket-hero {
+  --hero-ink: color-mix(in srgb, var(--bucket) 62%, #000);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-width: 0; min-height: 44px;
+  padding: var(--space-3) var(--space-4) var(--space-4); border: 0; border-radius: var(--radius-m); text-align: left; cursor: pointer; font: inherit;
+  background: color-mix(in srgb, var(--bucket) 14%, var(--card)); color: var(--hero-ink);
+  box-shadow: inset 0 3px 0 var(--bucket);
 }
-.b3d-label.is-shown { opacity: 1; }
-.b3d-label-num { font: 700 var(--t-caption) / 1 var(--font-sans); color: var(--bucket); }
-.b3d-label-name { font: 600 var(--t-subhead) / 20px var(--font-sans); color: var(--label); }
-.b3d-label-val { font: 400 var(--t-footnote) / 16px var(--font-sans); color: var(--label-2); font-variant-numeric: tabular-nums; }
-.b3d-cap { font: 500 var(--t-caption) / 16px var(--font-sans); color: var(--label-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.b3d-cap-num { font-weight: 700; color: var(--label); }
+.bucket-hero:hover { background: color-mix(in srgb, var(--bucket) 20%, var(--card)); }
+.bucket-hero[aria-pressed='true'] { box-shadow: inset 0 3px 0 var(--bucket), 0 0 0 2px var(--bucket); }
+.bucket-hero-value { font: 700 52px / 1 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.bucket-hero-name { font: 600 var(--t-caption) / 16px var(--font-sans); text-transform: uppercase; letter-spacing: 0.06em; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.bucket-hero-name b { color: var(--hero-ink); font-weight: 700; margin-right: 4px; }
+@media (max-width: 640px) { .bucket-hero-value { font-size: 44px; } }
 
-/* The web. */
+/* The web: SVG, drawn from src/lib/webLayout.ts. */
 .web { background: var(--card); border-radius: var(--radius-l); overflow: hidden; }
-.web-bar { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-bottom: 0.5px solid var(--separator); }
-.web-stat { margin-left: auto; font-size: var(--t-footnote); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.web-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-bottom: 0.5px solid var(--separator); }
+.web-stat { margin-left: auto; font-size: var(--t-caption); color: var(--text-3); font-variant-numeric: tabular-nums; }
 .web-stage { position: relative; height: 560px; }
-@media (max-width: 640px) { .web-stage { height: 440px; } }
-.web-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-.web-tip {
-  position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.12s;
-  padding: 4px 8px; border-radius: 8px; background: var(--label); color: var(--card);
-  font: 500 var(--t-caption) / 16px var(--font-sans); white-space: nowrap;
+@media (max-width: 640px) { .web-stage { height: 520px; } }
+.web-svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.web-svg:active { cursor: grabbing; }
+.web-hull { fill: color-mix(in srgb, var(--bucket) 12%, transparent); stroke: color-mix(in srgb, var(--bucket) 22%, transparent); stroke-width: 1.5; }
+.web-link { fill: none; stroke: var(--separator); stroke-width: 1; }
+.web-link.is-cross { stroke: color-mix(in srgb, var(--bucket) 70%, transparent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.web-dot { fill: var(--bucket); stroke: var(--card); stroke-width: 1.5; }
+.web-node.is-section .web-dot { fill: var(--card); stroke: var(--bucket); stroke-width: 2.5; }
+.web-hit { fill: transparent; }
+.web-label {
+  fill: var(--label-2); font-family: var(--font-sans); dominant-baseline: central; text-anchor: middle; pointer-events: none;
+  paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round;
 }
-.web-tip.is-shown { opacity: 1; }
-.web-failed { position: absolute; inset: auto var(--space-4) var(--space-4); }
+.web-node.is-section .web-label { fill: var(--label); font-weight: 600; }
+.web-label.is-spare, .web-svg.no-labels .web-label { opacity: 0; }
+.web-node.is-lit .web-label { opacity: 1; }
+.web-hub { cursor: pointer; }
+.web-hub rect { fill: color-mix(in srgb, var(--bucket) 72%, #000); }
+.web-hub text { fill: #fff; font: 700 13px / 1 var(--font-sans); dominant-baseline: central; text-anchor: middle; pointer-events: none; }
+.web-hub.is-selected rect { stroke: var(--label); stroke-width: 2; }
+.web-hub:focus-visible { outline: none; }
+.web-hub:focus-visible rect { stroke: var(--blue); stroke-width: 3; }
+.web-node, .web-hub, .web-link, .web-hull { transition: opacity 150ms ease; }
+.web-svg .is-faded { opacity: 0.15; }
+.web-svg .is-out { opacity: 0.15; filter: grayscale(1); }
+.web-link.is-lit { stroke: var(--bucket); stroke-width: 2; }
+.web-legend { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); border-top: 0.5px solid var(--separator); }
+.web-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 var(--space-3); border: 0; border-radius: 999px;
+  background: var(--fill); color: var(--label); font: 500 var(--t-subhead) / 1 var(--font-sans); cursor: pointer;
+}
+.web-chip[aria-pressed='true'] { background: color-mix(in srgb, var(--bucket) 18%, var(--card)); box-shadow: inset 0 0 0 1.5px var(--bucket); }
+.web-chip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bucket); }
+.web-chip-num { font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .web-node, .web-hub, .web-link, .web-hull { transition: none; } }
+/* Dark: bucket colours are the light steps, so pills take dark ink and hero figures use the bucket itself. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .web-hub rect { fill: var(--bucket); }
+  :root:not([data-theme='light']) .web-hub text { fill: #000; }
+  :root:not([data-theme='light']) .bucket-hero { --hero-ink: var(--bucket); }
+}
+:root[data-theme='dark'] .web-hub rect { fill: var(--bucket); }
+:root[data-theme='dark'] .web-hub text { fill: #000; }
+:root[data-theme='dark'] .bucket-hero { --hero-ink: var(--bucket); }
+
+/* Shared zoom bar (web, Board, Brain). */
+.view-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.vc-group { display: inline-flex; align-items: center; gap: var(--space-1); }
+.vc-btn { display: inline-grid; place-items: center; min-width: 30px; padding: 0 6px; }
+.vc-icon { display: block; }
+.vc-zoom { min-width: 3.5em; font-size: var(--t-caption); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.vc-dots { display: inline-flex; align-items: center; gap: 2px; }
+.vc-dot { position: relative; width: 22px; height: 30px; border: 0; padding: 0; background: none; cursor: pointer; }
+.vc-dot::after { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--label-2); opacity: 0.4; }
+.vc-dot.is-active::after { opacity: 1; background: var(--blue); width: 10px; height: 10px; margin: -5px 0 0 -5px; }
 
 /* Bucket tiles and the folder map. */
 .tiles { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }

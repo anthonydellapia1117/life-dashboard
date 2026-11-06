@@ -16,7 +16,6 @@ import {
   sectionCounts,
 } from '../lib/lifeosGraph';
 import { SegmentedControl } from '../components/SegmentedControl';
-import { Buckets3D } from '../components/Buckets3D';
 import { LifeWeb } from '../components/LifeWeb';
 
 type Metric = 'open' | 'week' | 'files';
@@ -58,14 +57,13 @@ export function nextCalendar(data: LifeData, now: Date, limit = 3): Upcoming[] {
 }
 
 /**
- * Life OS - the landing tab. Today at a glance, the six 3D buckets, the web,
+ * Life OS - the landing tab. Today at a glance, the six bucket tiles, the web,
  * then the bucket tiles and the folder map. Everything carries data-bucket so
  * the global filter (src/lib/filter.ts) dims what sits outside the chosen one.
  */
 export function LifeOsTab({ data, nodes, now }: { data: LifeData; nodes: ResolvedNode[]; now: Date }) {
   const { selected, toggle } = useBucketFilter();
   const [metric, setMetric] = useState<Metric>('open');
-  const [webgl, setWebgl] = useState(true);
   const lifeos = data.lifeos;
 
   const actionable = useMemo(
@@ -114,8 +112,8 @@ export function LifeOsTab({ data, nodes, now }: { data: LifeData; nodes: Resolve
         </div>
       </section>
 
-      <section className="hero3d" aria-label="Buckets">
-        <div className="hero3d-head">
+      <section className="hero-buckets" aria-label="Buckets">
+        <div className="hero-buckets-head">
           <h2 className="title2">Six buckets</h2>
           <SegmentedControl
             className="seg-inline"
@@ -125,17 +123,25 @@ export function LifeOsTab({ data, nodes, now }: { data: LifeData; nodes: Resolve
             onChange={setMetric}
           />
         </div>
-        {webgl ? (
-          <Buckets3D
-            values={values[metric]}
-            unit={current.unit}
-            selected={selected}
-            onSelect={toggle}
-            onUnavailable={() => setWebgl(false)}
-          />
-        ) : (
-          <p className="footnote">3D view is off in this browser. The tiles below carry the same numbers.</p>
-        )}
+        <div className="bucket-heroes">
+          {BUCKETS.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              className={`bucket-hero ${b.className} keep-clickable`}
+              data-bucket={b.id}
+              aria-pressed={selected === b.id}
+              aria-label={`${b.id} ${b.name}: ${values[metric][b.id]} ${current.unit}. Filter to this bucket.`}
+              onClick={() => toggle(b.id)}
+            >
+              <span className="bucket-hero-value">{values[metric][b.id]}</span>
+              <span className="bucket-hero-name">
+                <b>{b.id}</b>
+                {b.name}
+              </span>
+            </button>
+          ))}
+        </div>
         {metric === 'files' ? (
           <p className="footnote">From the {lifeos?.filesFiledAsOf ?? FILES_FILED_AS_OF} Mac file sort.</p>
         ) : null}

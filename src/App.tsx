@@ -51,7 +51,7 @@ import { Unico } from './tabs/Unico';
 import { Projects } from './tabs/Projects';
 import { AiStack } from './tabs/AiStack';
 
-// three and d3 load only with this tab.
+// d3 loads only with this tab.
 const LifeOsTab = lazy(() => import('./tabs/LifeOsTab').then((m) => ({ default: m.LifeOsTab })));
 
 type Phase = 'loading' | 'error' | 'locked' | 'lockcode' | 'setlock' | 'unlocked';
