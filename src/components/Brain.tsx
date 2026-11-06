@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { buildGraph, layout, neighbours, type GraphNode } from '../lib/graph';
 import { GRADE_META, gradeClass, gradeOf } from '../lib/grade';
+import { bucketOf } from '../lib/bucket';
 import type { ResolvedNode } from '../lib/live';
 import { GradeChip } from './GradeIcon';
 
@@ -149,7 +150,7 @@ export function Brain({
                 .filter(Boolean)
                 .join(' ');
               return (
-                <g key={gn.id}>
+                <g key={gn.id} data-bucket={item ? bucketOf(item) : undefined}>
                   <circle
                     className={classes}
                     cx={gn.x}

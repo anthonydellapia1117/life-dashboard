@@ -49,6 +49,9 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
 const dataPath = path.join(repoRoot, 'data', 'life.json');
 const outPath = path.join(repoRoot, 'public', 'data', 'life.enc.json');
+// Optional: the Life OS web, tile copy and folder map. Gitignored like
+// data/life.json and sealed into the same blob under `lifeos`.
+const lifeosPath = path.join(repoRoot, 'data', 'lifeos.json');
 
 const subtle = globalThis.crypto?.subtle;
 if (!subtle) {
@@ -214,6 +217,16 @@ async function main() {
     console.error(`${path.relative(repoRoot, dataPath)} is not valid JSON: ${err.message}`);
     process.exit(1);
     return;
+  }
+
+  if (fs.existsSync(lifeosPath)) {
+    try {
+      parsed.lifeos = JSON.parse(fs.readFileSync(lifeosPath, 'utf8'));
+    } catch (err) {
+      console.error(`${path.relative(repoRoot, lifeosPath)} is not valid JSON: ${err.message}`);
+      process.exit(1);
+      return;
+    }
   }
 
   const reused = rotate ? undefined : tryReadExistingSeal();

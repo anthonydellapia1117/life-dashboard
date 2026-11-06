@@ -7,8 +7,10 @@ data lives in this file - see `data/life.json` (gitignored) for real content.
 
 - Today answers one question in under 3 seconds: what do I do next.
 - Hick's law: 4 zones (Today, Work, Life, Build), not 9 tabs.
-- Fitts's law: bottom nav bar on phone (thumb zone, 56px targets); left rail
-  at >=1024px.
+- One sticky glass top nav on every width (Apple style): wordmark, the tabs
+  as a segmented control, the six bucket chips. On phones the tabs scroll
+  sideways and the chips wrap to a second row. The add button stays bottom
+  right in thumb reach.
 - Progressive disclosure: show the top of every list, fold the rest behind a
   native `<details>` ("+N more").
 - Color is information, not decoration: neutral UI, one accent for
@@ -23,71 +25,77 @@ All tokens live as CSS custom properties in `src/styles/global.css`.
 **Spacing** - base unit 4px: `--space-1..16` = 4, 8, 12, 16, 24, 32, 48, 64px
 (x1,2,3,4,6,8,12,16). Nothing off-scale.
 
-**Type** - modular scale, ratio 1.25 on 16px, line heights on the 4px grid.
-Tokens are rem (16px root), not px, so iOS text-size settings scale the
-whole app; spacing tokens (section above) stay px:
+**Type** - the Apple system stack, nothing bundled or fetched:
+`-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+"Helvetica Neue", Inter, system-ui, sans-serif`, numerals tabular throughout.
+Scale as tokens (`--t-*`, size / weight):
 
-| Token | Size | Line height |
+| Style | Size / weight | Used for |
 | --- | --- | --- |
-| xs | 0.8rem (12.8px) | 1rem (16px) |
-| base | 1rem (16px) | 1.5rem (24px) |
-| md | 1.25rem (20px) | 1.75rem (28px) |
-| lg | 1.5625rem (25px) | 2rem (32px) |
-| xl | 1.953rem (31.25px) | 2.5rem (40px) |
-| hero | 3.052rem (48.83px) | 3.5rem (56px) |
+| large title | 34 / 700 | screen title |
+| title | 28 / 700 | KPI figures |
+| title2 | 22 / 700 | Life OS section titles |
+| title3 | 20 / 600 | empty-state headings |
+| headline | 17 / 600 | section headers, card titles, tile names |
+| body | 17 / 400 | item titles, default text |
+| callout | 16 / 400 | tiebreak line |
+| subhead | 15 / 400 | tile copy, chips, calendar rows |
+| footnote | 13 / 400 | meta, segmented labels, table heads |
+| caption, caption2 | 12, 11 / 400 | labels on the 3D buckets and the web |
 
-One family, **Plus Jakarta Sans** (OFL, weights 400-800), bundled into the
-build from `@fontsource` (latin subset only) rather than linked from a font
-host: the service worker caches it as same-origin files, so the type survives
-offline, and opening the dashboard sends no request to any outside font
-service. Figures (screen titles, the hero number, level, trend) use the same
-face at weight 800 with tight tracking, so weight rather than a second
-typeface sets them apart. Section labels are 13px uppercase at 0.06em. Body
-defaults to proportional digits; only
-`td`/`th` and a few numeric labels (agenda time, balance count) use
-`tabular-nums`. Unlock/segmented/nav text and inputs are >=12.8px, and every
-text input is exactly `--text-base-size` (16px) so iOS never zooms on focus.
+Section headers are sentence case headline weight, never tracked caps.
+Every text input stays at 16px or more so iOS never zooms on focus. The old
+rem scale (`--text-*`) is kept for rules that still read it.
 
-**Layout** - container maxes out at 1200px with 16px gutters on phone, 24px
-on desktop (>=1024px); tablet keeps the 16px gutter. This governs padding
-and margins; the app does not otherwise force a literal N-column CSS grid
-where a simpler flex/2-up pattern already reads cleanly at every width.
-Today is a golden-ratio split on desktop: `grid-template-columns: 1.618fr
-1fr`.
+**Layout** - container maxes out at 1200px (the nav at 1440px) with 16px
+gutters on phone, 24px on desktop. Today keeps its golden-ratio split on
+desktop (`1.618fr 1fr`).
 
-**Radius / shadow / containers** - tokens, so the look can change in one
-block: `--radius-control` 12px, `--radius-card` 20px, `--radius-item` 14px,
-`--radius-pill` 999px, and two soft shadows (`--shadow-card`,
-`--shadow-item`). Every group of related things sits in its own white card:
-section cards, item lists, the capture box, the grade breakdown, the progress
-cards, board cards and columns. In dark mode a shadow does not read, so cards
-carry a 1px `--card-border` instead. Tap targets >= 44px (nav targets 56px
-tall).
+**Radius / depth** - three radii: `--radius-s` 10px (controls, chips, list
+items), `--radius-m` 14px (grouped cards), `--radius-l` 20px (the 3D hero,
+the web, sheets). No drop shadows on cards: grouping comes from white cards
+on the grey ground and 0.5px inset separators between rows (a row's hairline
+starts after its check circle, as in iOS Settings). The only shadow is the
+raised segment of a segmented control and the add button.
 
-**Colour tokens** - light default, dark via `prefers-color-scheme` (a
-chosen palette, not an auto-invert):
+**Glass** - nav and floating labels: `--glass` rgba(255,255,255,.72) light,
+rgba(28,28,30,.72) dark, with `backdrop-filter: saturate(180%) blur(20px)`
+and a 0.5px `--separator` edge.
+
+**Colour tokens** - light, then dark via `prefers-color-scheme`. A
+`data-theme="light"|"dark"` attribute on `<html>` overrides the system
+setting (dark block guarded with `:root:not([data-theme="light"])` and
+repeated under `:root[data-theme="dark"]`). There is no toggle in the UI yet.
 
 | Token | Light | Dark |
 | --- | --- | --- |
-| bg (ground) | #f4f1ec | #14120f |
-| surface (cards) | #ffffff | #1f1b17 |
-| surface-2 (panels, tracks) | #efe9e1 | #2a251f |
-| border | #e6dfd5 | #342e27 |
-| card-border | transparent | #2e2822 |
-| text-1 | #241f1a | #f1ebe2 |
-| text-2 | #574d44 | #c9beb0 |
-| text-3 | #6e6356 | #a0958a |
-| accent | #0f766e | #3fb5a6 |
-| on-accent | #ffffff | #10100c |
-| nav-bg | #ffffff | #1a1713 |
+| background | #F2F2F7 | #000000 |
+| card (grouped) | #FFFFFF | #1C1C1E |
+| fill (secondary) | rgba(120,120,128,.16) | rgba(120,120,128,.24) |
+| label | #000000 | #FFFFFF |
+| label-2 (secondary) | rgba(60,60,67,.6) | rgba(235,235,245,.6) |
+| separator | rgba(60,60,67,.29) | rgba(84,84,88,.6) |
+| blue (accent) | #007AFF | #0A84FF |
+| green | #34C759 | #30D158 |
+| orange | #FF9500 | #FF9F0A |
+| red | #FF3B30 | #FF453A |
+| gray | #8E8E93 | #8E8E93 |
 
-Every text token clears 4.5:1 on bg, surface, surface-2 and nav-bg: worst
-pair 4.86:1 in light, 5.18:1 in dark. Primary actions (Save, Unlock, the add
-button) are the teal accent, with `on-accent` flipping from white to near
-black in dark mode, where white on the lighter teal would not pass.
+The older names (`--bg`, `--surface`, `--text-1..3`, `--accent`, `--border`)
+are aliases onto these, so every rule written before the restyle follows.
+`--text-3` is a solid grey (#6C6C70 / #98989D) rather than label-2, so small
+captions keep contrast on both the card and the ground.
+
+**Buckets** - categorical, separate from the grade ramp, always named in words
+beside the colour: `--bucket-1` Me #1f9a8a / #4cc9c0, `--bucket-2` Family
+#d14d7a / #ff86ad, `--bucket-3` Career & Network #3f6fd8 / #8fa8ff,
+`--bucket-4` Money Ventures #2f9e55 / #6fd895, `--bucket-5` Bills & Finances
+#c48a1f / #e8b54a, `--bucket-6` Work #7a4fb8 / #b08ae8.
 
 Status (reserved, fixed across both modes, icon + label only, never in
-text): critical #d03b3b, warning #fab219, good #0ca30c.
+text): critical #d03b3b, warning #fab219, good #0ca30c. The grade ramp is
+unchanged (see below); it was validated on white and near-black surfaces,
+which the Apple card colours match closely.
 
 ### Palette validator
 
@@ -120,14 +128,17 @@ icon+label pairing.
 
 ## 3. Information architecture
 
-Zones and sections (`src/lib/routing.ts`):
+Zones and sections (`src/lib/routing.ts`), in nav order:
 
-- **Today** (`#today`) - no sections.
+- **Life OS** (`#lifeos`) - the landing route for an empty hash. No sections.
+- **Today** (`#today`) - no sections. Unknown hashes still fall back here.
 - **Work** - Engagement (`data.work`), Career (`data.career`), Business
   (`data.ayvede`).
 - **Life** - Family (`data.family`), Finances (`data.finances`), Community
   (`data.unico`).
 - **Build** - Projects (`data.projects`), AI stack (`data.aiStack`).
+- **Map** - Board, Roadmap, Brain, Progress.
+- **Claude** (`#claude`) - a placeholder tab (`src/tabs/Claude.tsx`) for the next build.
 
 A zone named with no section opens its first. Legacy hash map (old
 flat tab -> new path): `#overview`->`#today`, `#work`->`#work/engagement`,
@@ -233,7 +244,7 @@ confirmed to fail the right test, then restored (see report).
 ## 8. Home-screen app (manifest, service worker)
 
 - `index.html` - viewport carries `viewport-fit=cover`; `apple-mobile-web-app-capable`/`mobile-web-app-capable`, status-bar-style `black-translucent`, title "AVD Life"; `theme-color` for light/dark via two media-query meta tags matching the `--bg` tokens; `manifest.webmanifest`, `apple-touch-icon` (180), `icon` (192) links. Every new href is relative (no leading slash) - the site is served under `/life-dashboard/`, and Vite's own `/src/main.tsx` entry tag is rewritten to that base separately at build time.
-- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--bg` (#f4f1ec), icons 192/512/maskable-512 (already in `public/icons/`).
+- `public/manifest.webmanifest` - name/short_name, `start_url`/`scope` ".", `display` standalone, `orientation` portrait, background/theme color matching the light `--background` (#F2F2F7), icons 192/512/maskable-512 (already in `public/icons/`).
 - `public/sw.js` - install (`skipWaiting` + a best-effort shell precache), activate (`clients.claim` + delete every cache but the current one), fetch (same-origin GET only - navigations and `data/life.enc.json` are network-first with a cache fallback; every other same-origin asset is stale-while-revalidate; cross-origin and non-GET requests are never touched, `respondWith` is simply not called for them).
 - Cache name is `` life-dashboard-${BUILD_ID} ``. `public/` is copied to `dist/` verbatim by Vite (public files are never run through esbuild/rollup, so a literal `define` substitution can't reach them) - `vite.config.ts` derives one `buildId` (`Date.now().toString(36)`), exposes it as a real `define: { __SW_BUILD_ID__ }` entry, and a small `closeBundle` plugin finds/replaces that same token in the already-copied `dist/sw.js`. Documented here so the two-step mechanism reads as a deliberate consequence of how publicDir copying works, not an oversight.
 - `src/main.tsx` registers `` `${BASE_URL}sw.js` `` only under `import.meta.env.PROD`, guarded by `typeof window !== 'undefined'` and `'serviceWorker' in navigator` - inert under Vitest's Node test environment even without the explicit guard.
@@ -321,37 +332,49 @@ makes the cheapest way to win "do the easy things", which is exactly the habit
 a dashboard should not pay for. Every figure comes from real completions in the
 overlay - nothing is seeded, so an empty history reads as zero and says so.
 
-## The soft direction
+## The Apple direction
 
-Chosen after living with two others. The first shipped design was competent
-but read as dull: a system font, one muted teal, white cards on a grey field,
-4/8px radii. An editorial pass (serif figures, paper and ink, thin rules
-instead of boxes) fixed the dullness but failed in use: with every container
-removed, nothing grouped anything, and the owner could not break a screen into
-parts at a glance. That is the lesson this direction is built on - **on this
-dashboard, containers are information**, not decoration.
+Replaces the soft direction. The lesson it kept: **containers are
+information**. What changed is the vocabulary: iOS grouped lists instead of
+floating soft cards.
 
-What it keeps and what it changes:
+1. **Grouped cards, inset hairlines.** White cards on #F2F2F7 (black and
+   #1C1C1E in dark), no shadows, 0.5px separators inset past the check circle.
+2. **Segmented controls everywhere a view switches**: the nav tabs, a zone's
+   sections, Today's Matrix / List, the Life OS bucket value.
+3. **KPI tiles** are small grouped cards with a 28/700 tabular figure.
+4. **Chip rows** for buckets: a coloured dot, the number, the name.
+5. **One bold element**: the six 3D glass buckets on the Life OS tab.
+   Everything around them stays quiet. No decorative gradients, no emoji.
 
-1. **Containers are back, softer.** Every group of related things is its own
-   white rounded card on a warm ground, lifted by a soft shadow instead of
-   outlined by a border.
-2. **Focus floats.** The three Focus items are separate cards; longer lists
-   share one container with dividers. The difference in treatment is itself
-   the signal that Focus matters more.
-3. **Pills for everything small.** Grade chips, legend keys, badges and tabs
-   are pills with a tinted ground. The tint and the glyph carry the grade
-   colour; the word stays in ink, so no grade colour is ever asked to pass as
-   small text.
-4. **The figure beside its sentence.** "5" at 76px/800 with "1 of 9 finished.
-   8 still open." next to it, then the bar - one grid, no extra markup.
-5. **A faint wash** of teal and amber on the ground behind the top of Today and
-   Progress. It sits under every card, so cards stay white, and it stops at
-   the screen edge (a wider wash made the page scroll sideways).
+## Global bucket filter
 
-The grade ramp moved one step for this ground: light "done" is #0a9410,
-because #0ca30c measured 2.78:1 on the tinted board panels, under the 3:1 a
-mark needs.
+`src/lib/filter.ts` holds one value: a bucket 1-6 or none, persisted in
+localStorage under `lifeos.filter` (a UI preference, never item content).
+Set it from a nav chip, a bucket tile, a 3D bucket or a hub in the web; the
+selected one again clears it; Esc or Clear filters clears it.
+
+Any element with `data-bucket="N"` takes part, on any tab, with no extra
+wiring: `installFilterDom()` (mounted once in `App.tsx`) gives the others
+`.is-dimmed` (opacity .15, grayscale, no pointer events, 200ms) and the
+matches `.is-match` (a 2px ring in the bucket colour). Controls that change
+the filter carry `data-bucket-chip` instead, so they are never dimmed. Canvas
+views (3D buckets, the web) read `useBucketFilter()` and dim themselves.
+
+## Life OS tab
+
+`src/tabs/LifeOsTab.tsx`, lazy loaded so three.js and d3 load with this tab
+only. In order: Today at a glance (Open, Due this week, Overdue, next three
+calendar items, each a link to `#today`); six 3D glass buckets whose liquid
+height is value over max (Open items, Due this week, or Files filed from the
+2026-11-06 Mac file sort), with tiles only when WebGL is missing; the web, a
+d3-force graph on canvas (hubs are the buckets, plus a node per section that
+holds open items); the bucket tiles, the tiebreak line and the folder map.
+
+The web's nodes, links, tile copy and folder map live in `data/lifeos.json`
+(gitignored). `npm run seal` folds it into the sealed blob as `lifeos`, so it
+ships encrypted like everything else; without it the tab shows hubs and
+generic tile copy.
 
 ## Device lock
 

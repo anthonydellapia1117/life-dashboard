@@ -38,7 +38,7 @@ The dev server fetches the same `public/data/life.enc.json` the production build
 | `npm run build` | Production build to `dist/` |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest |
-| `npm run seal` | Encrypt `data/life.json` |
+| `npm run seal` | Encrypt `data/life.json` (plus `data/lifeos.json`, the Life OS web, when present) |
 | `npm run guard` | Scan for plaintext leaks |
 
 ## Repo layout

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { BUCKETS, bucketMeta, bucketOf, countByBucket, type BucketId } from '../lib/bucket';
+import { BUCKETS, bucketMeta, bucketOf, countByBucket } from '../lib/bucket';
+import { useBucketFilter } from '../lib/filter';
 import { compareByGrade, gradeOf } from '../lib/grade';
 import { QUADRANTS, kpiCounts, quadrantOf, weekStrip, type Quadrant } from '../lib/eisenhower';
 import { loadCalendarFile } from '../lib/calendarFile';
@@ -16,6 +17,7 @@ function Chip({ node, now, onOpen }: { node: ResolvedNode; now: Date; onOpen: (i
     <button
       type="button"
       className={`eis-chip ${bucket.className}`}
+      data-bucket={bucket.id}
       onClick={() => onOpen(node.id)}
       title={`${bucket.name}: ${node.title}`}
     >
@@ -43,13 +45,14 @@ export function LifeOs({
   onOpen: (id: string) => void;
   showAll: boolean;
 }) {
-  const [filter, setFilter] = useState<BucketId | undefined>(undefined);
+  // The global filter (src/lib/filter.ts) dims chips outside the chosen bucket rather than hiding them.
+  const { selected: filter, toggle } = useBucketFilter();
   const [expanded, setExpanded] = useState<Partial<Record<Quadrant, boolean>>>({});
 
   const open = useMemo(() => nodes.filter((n) => !n.done), [nodes]);
   const counts = useMemo(() => countByBucket(open), [open]);
   const kpis = useMemo(() => kpiCounts(open, now), [open, now]);
-  const visible = useMemo(() => (filter ? open.filter((n) => bucketOf(n) === filter) : open), [open, filter]);
+  const visible = open;
 
   const byQuadrant = useMemo(() => {
     const map: Record<Quadrant, ResolvedNode[]> = { do: [], schedule: [], delegate: [], drop: [] };
@@ -82,8 +85,9 @@ export function LifeOs({
             key={b.id}
             type="button"
             className={`eis-pill ${b.className}${filter === b.id ? ' is-on' : ''}`}
+            data-bucket-chip={b.id}
             aria-pressed={filter === b.id}
-            onClick={() => setFilter(filter === b.id ? undefined : b.id)}
+            onClick={() => toggle(b.id)}
           >
             <span className="eis-pill-dot" aria-hidden="true" />
             {b.name}
@@ -133,6 +137,7 @@ export function LifeOs({
                 <div
                   key={`${e.title}-${i}`}
                   className={`eis-event ${bucketMeta(bucketOf({ bucket: e.bucket })).className}`}
+                  data-bucket={bucketOf({ bucket: e.bucket })}
                   title={e.title}
                 >
                   {e.title}

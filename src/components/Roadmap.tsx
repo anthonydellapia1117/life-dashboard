@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { roadmapByMonth, roadmapLanes } from '../lib/roadmap';
+import { bucketOf } from '../lib/bucket';
 import { gradeClass, gradeOf } from '../lib/grade';
 import type { ResolvedNode } from '../lib/live';
 import { formatDate } from '../lib/date';
@@ -37,7 +38,7 @@ function Item({
 }) {
   const grade = gradeOf({ due: node.due, horizon: node.horizon, done: node.done }, now);
   return (
-    <div className={`road-item ${gradeClass(grade)}${node.done ? ' road-done' : ''}`}>
+    <div className={`road-item ${gradeClass(grade)}${node.done ? ' road-done' : ''}`} data-bucket={bucketOf(node)}>
       <button
         type="button"
         className="road-check"

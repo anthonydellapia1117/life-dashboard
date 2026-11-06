@@ -11,7 +11,9 @@ export function SegmentedControl<T extends string>({
   active,
   onChange,
   ariaLabel,
+  className,
 }: {
+  className?: string;
   options: SegmentedOption<T>[];
   active: T;
   onChange: (id: T) => void;
@@ -42,7 +44,7 @@ export function SegmentedControl<T extends string>({
   }
 
   return (
-    <div className="segmented" role="tablist" aria-label={ariaLabel}>
+    <div className={`segmented${className ? ` ${className}` : ''}`} role="tablist" aria-label={ariaLabel}>
       {options.map((opt, index) => (
         <button
           key={opt.id}

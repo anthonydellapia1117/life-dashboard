@@ -1,4 +1,5 @@
 import { gradeOf } from '../lib/grade';
+import { bucketOf } from '../lib/bucket';
 import type { ResolvedNode } from '../lib/live';
 import { trackLabel } from '../lib/track';
 import { GradeChip } from './GradeIcon';
@@ -27,7 +28,7 @@ export function NodeRow({
   const track = trackLabel(node.track);
 
   return (
-    <div className={`node-row${node.done ? ' node-done' : ''}`}>
+    <div className={`node-row${node.done ? ' node-done' : ''}`} data-bucket={bucketOf(node)}>
       <button
         type="button"
         className="node-check"

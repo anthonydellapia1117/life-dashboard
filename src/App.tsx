@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import type { SealedBlob } from './crypto';
 import { WrongPassphraseError, decryptWithKey, unlockWithPassphrase } from './crypto';
 import { clearRememberedKeys, loadRememberedKey } from './idb';
@@ -28,7 +28,10 @@ import {
 import { useLive } from './lib/live';
 import type { EditFields } from './lib/edits';
 import { Header } from './components/Header';
-import { NavBar } from './components/NavBar';
+import { TopNav } from './components/TopNav';
+import { installFilterDom } from './lib/filter';
+import { bucketOf } from './lib/bucket';
+import { ClaudeTab } from './tabs/Claude';
 import { SegmentedControl } from './components/SegmentedControl';
 import { Unlock } from './components/Unlock';
 import { LockScreen } from './components/LockScreen';
@@ -45,6 +48,9 @@ import { Finances } from './tabs/Finances';
 import { Unico } from './tabs/Unico';
 import { Projects } from './tabs/Projects';
 import { AiStack } from './tabs/AiStack';
+
+// three and d3 load only with this tab.
+const LifeOsTab = lazy(() => import('./tabs/LifeOsTab').then((m) => ({ default: m.LifeOsTab })));
 
 type Phase = 'loading' | 'error' | 'locked' | 'lockcode' | 'setlock' | 'unlocked';
 
@@ -110,6 +116,9 @@ export default function App() {
 
   const now = useMemo(() => new Date(), []);
   const live = useLive(data, cryptoKey, blob?.salt ?? '');
+
+  // Global bucket filter: Esc clears it, and every [data-bucket] element on any tab is dimmed or ringed.
+  useEffect(() => installFilterDom(), []);
 
   useEffect(() => {
     function onHashChange() {
@@ -368,8 +377,8 @@ export default function App() {
   async function handleAdd() {
     const fields: EditFields = {
       title: 'New item',
-      zone: route.zone === 'map' || route.zone === 'today' ? 'today' : route.zone,
-      section: route.zone === 'map' || route.zone === 'today' ? undefined : route.section,
+      zone: route.zone === 'map' || !route.section ? 'today' : route.zone,
+      section: route.zone === 'map' || !route.section ? undefined : route.section,
       area: route.section ? SECTION_LABELS[route.section] : 'Inbox',
       horizon: 'week',
     };
@@ -392,7 +401,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {phase === 'unlocked' ? <NavBar active={route.zone} onChange={goToZone} /> : null}
+      {phase === 'unlocked' ? <TopNav active={route.zone} onChange={goToZone} /> : null}
       <div className="app-body">
         <div className="app-topbar">
           <Header title={title} asOf={data?.meta.asOf} unlocked={phase === 'unlocked'} onLock={handleLock} />
@@ -430,7 +439,13 @@ export default function App() {
                 </p>
               ) : null}
 
-              {route.zone === 'today' ? (
+              {route.zone === 'lifeos' ? (
+                <Suspense fallback={<div className="status-message">Loading...</div>}>
+                  <LifeOsTab data={data} nodes={live.nodes} now={now} />
+                </Suspense>
+              ) : route.zone === 'claude' ? (
+                <ClaudeTab data={data} nodes={live.nodes} now={now} onOpen={setEditing} />
+              ) : route.zone === 'today' ? (
                 <Today
                   data={data}
                   cryptoKey={cryptoKey}
@@ -461,7 +476,9 @@ export default function App() {
                     onToggle={live.toggleDone}
                     onOpen={setEditing}
                   />
-                  {renderSection(route.section, data)}
+                  <div className="section-body" data-bucket={route.section ? bucketOf({ section: route.section }) : undefined}>
+                    {renderSection(route.section, data)}
+                  </div>
                 </>
               )}
             </div>

@@ -14,7 +14,7 @@
  * via LEGACY_HASH_MAP, to its new home below.
  */
 
-export type ZoneId = 'today' | 'work' | 'life' | 'build' | 'map';
+export type ZoneId = 'lifeos' | 'today' | 'work' | 'life' | 'build' | 'map' | 'claude';
 
 export type SectionId =
   | 'engagement'
@@ -35,9 +35,14 @@ export interface Route {
   section?: SectionId;
 }
 
-export const ZONE_IDS: ZoneId[] = ['today', 'work', 'life', 'build', 'map'];
+export const ZONE_IDS: ZoneId[] = ['lifeos', 'today', 'work', 'life', 'build', 'map', 'claude'];
+
+/** Where an empty hash lands. Unknown hashes still fall back to Today, as before. */
+export const DEFAULT_ZONE: ZoneId = 'lifeos';
 
 export const ZONE_LABELS: Record<ZoneId, string> = {
+  lifeos: 'Life OS',
+  claude: 'Claude',
   today: 'Today',
   work: 'Work',
   life: 'Life',
@@ -46,6 +51,8 @@ export const ZONE_LABELS: Record<ZoneId, string> = {
 };
 
 export const SECTIONS_BY_ZONE: Record<ZoneId, SectionId[]> = {
+  lifeos: [],
+  claude: [],
   today: [],
   work: ['engagement', 'career', 'business'],
   life: ['family', 'finances', 'community'],
@@ -100,7 +107,7 @@ function isSectionOf(zone: ZoneId, value: string): value is SectionId {
  */
 export function parseHash(hash: string): Route {
   const raw = hash.replace(/^#/, '').trim();
-  if (!raw) return { zone: 'today' };
+  if (!raw) return { zone: DEFAULT_ZONE };
 
   if (Object.prototype.hasOwnProperty.call(LEGACY_HASH_MAP, raw)) {
     return parseHash(LEGACY_HASH_MAP[raw]);

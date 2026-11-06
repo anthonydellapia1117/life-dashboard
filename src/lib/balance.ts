@@ -15,7 +15,7 @@ import type { ZoneId } from './routing';
  * Balance buckets into the 3 zones work actually lives in. Today is a view of
  * those zones and Map is a view of all of them, so neither is a bucket.
  */
-export type BalanceZone = Exclude<ZoneId, 'today' | 'map'>;
+export type BalanceZone = Exclude<ZoneId, 'today' | 'map' | 'lifeos' | 'claude'>;
 
 const WORK_AREAS = new Set(['work', 'career', 'business', 'ayvede']);
 const BUILD_AREAS = new Set(['projects', 'ai stack', 'ai-stack', 'build']);

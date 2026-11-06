@@ -386,6 +386,8 @@ export interface LifeData {
   family?: FamilyData;
   finances?: FinancesData;
   aiStack?: AiStackData;
+  /** Life OS web, tile copy and folder map - sealed in from data/lifeos.json (src/lib/lifeosGraph.ts). */
+  lifeos?: import('./lib/lifeosGraph').LifeOsData;
 }
 
 // Zone/section IA (routing, labels, legacy-hash map) lives in

@@ -1,13 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-// Latin subsets only, bundled into the build: same-origin files the service
-// worker caches, so the type survives offline and no font host is ever called.
-import '@fontsource/plus-jakarta-sans/latin-400.css';
-import '@fontsource/plus-jakarta-sans/latin-500.css';
-import '@fontsource/plus-jakarta-sans/latin-600.css';
-import '@fontsource/plus-jakarta-sans/latin-700.css';
-import '@fontsource/plus-jakarta-sans/latin-800.css';
+// Type is the platform's own system stack (SF on Apple devices): nothing to
+// bundle, nothing to fetch, works offline. See DESIGN.md.
 import './styles/global.css';
 
 const container = document.getElementById('root');

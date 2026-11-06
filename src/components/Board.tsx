@@ -1,4 +1,5 @@
 import { boardColumns, dueForGrade } from '../lib/board';
+import { bucketOf } from '../lib/bucket';
 import { GRADE_META, gradeClass, gradeOf, type Grade } from '../lib/grade';
 import type { EditFields } from '../lib/edits';
 import type { ResolvedNode } from '../lib/live';
@@ -32,7 +33,7 @@ function Card({
   canRight: boolean;
 }) {
   return (
-    <div className={`bcard ${gradeClass(grade)}${node.done ? ' bcard-done' : ''}`}>
+    <div className={`bcard ${gradeClass(grade)}${node.done ? ' bcard-done' : ''}`} data-bucket={bucketOf(node)}>
       <button type="button" className="bcard-body" onClick={() => onOpen(node.id)}>
         <span className="bcard-title">{node.title}</span>
         <span className="bcard-area">{node.area}</span>

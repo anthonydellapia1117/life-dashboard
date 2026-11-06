@@ -1,10 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { parseHash, routeToHash } from '../src/lib/routing';
+import { DEFAULT_ZONE, ZONE_IDS, parseHash, routeToHash } from '../src/lib/routing';
 
 describe('parseHash - canonical routes', () => {
-  it('defaults to Today for an empty hash', () => {
-    expect(parseHash('')).toEqual({ zone: 'today' });
-    expect(parseHash('#')).toEqual({ zone: 'today' });
+  // The landing route moved from Today to Life OS; Today keeps its own hash.
+  it('defaults to Life OS for an empty hash', () => {
+    expect(DEFAULT_ZONE).toBe('lifeos');
+    expect(parseHash('')).toEqual({ zone: 'lifeos' });
+    expect(parseHash('#')).toEqual({ zone: 'lifeos' });
+    expect(parseHash('   ')).toEqual({ zone: 'lifeos' });
+  });
+
+  it('resolves the Life OS and Claude tabs, which have no sections', () => {
+    expect(parseHash('#lifeos')).toEqual({ zone: 'lifeos' });
+    expect(parseHash('#claude')).toEqual({ zone: 'claude' });
+    expect(parseHash('#lifeos/anything')).toEqual({ zone: 'lifeos' });
+    expect(routeToHash({ zone: 'lifeos' })).toBe('#lifeos');
+    expect(routeToHash({ zone: 'claude' })).toBe('#claude');
+  });
+
+  it('lists the tabs in nav order, Life OS first and Claude last', () => {
+    expect(ZONE_IDS).toEqual(['lifeos', 'today', 'work', 'life', 'build', 'map', 'claude']);
   });
 
   it('parses every canonical zone/section path', () => {
