@@ -1,24 +1,20 @@
 import { BUCKETS } from '../lib/bucket';
 import { useBucketFilter } from '../lib/filter';
 import { ZONE_IDS, ZONE_LABELS, type ZoneId } from '../lib/routing';
+import { Rail } from './Rail';
 
 /**
  * Sticky glass top nav, on every tab once unlocked. Left: wordmark. Center:
  * the zone tabs as an iOS segmented control (hash routes). Right: the six
  * bucket chips that drive the global filter (src/lib/filter.ts), plus Clear
- * filters while one is set. On phones the tabs scroll sideways and the chips
- * wrap to their own row (global.css).
+ * filters while one is set. Under it, the progress rail (Rail.tsx). On
+ * phones the tabs scroll sideways and the chips wrap to their own row
+ * (global.css).
  *
  * The chips carry data-bucket-chip, not data-bucket, so the filter never dims
  * the control that changes it.
  */
-export function TopNav({
-  active,
-  onChange,
-}: {
-  active: ZoneId;
-  onChange: (id: ZoneId) => void;
-}) {
+export function TopNav({ active, onChange, now }: { active: ZoneId; onChange: (id: ZoneId) => void; now: Date }) {
   const { selected, toggle, clear } = useBucketFilter();
   return (
     <header className="topnav">
@@ -69,6 +65,7 @@ export function TopNav({
           ) : null}
         </div>
       </div>
+      <Rail now={now} />
     </header>
   );
 }

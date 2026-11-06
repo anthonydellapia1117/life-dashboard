@@ -128,3 +128,13 @@ export function routeToHash(route: Route): string {
   if (!route.section) return `#${route.zone}`;
   return `#${route.zone}/${route.section}`;
 }
+
+/**
+ * The guided order: the tab after this one, left to right as the nav draws
+ * them (ZONE_IDS). Null after the last tab - the roadmap ends, it does not loop.
+ */
+export function nextZone(zone: ZoneId): ZoneId | null {
+  const i = ZONE_IDS.indexOf(zone);
+  if (i < 0 || i >= ZONE_IDS.length - 1) return null;
+  return ZONE_IDS[i + 1];
+}

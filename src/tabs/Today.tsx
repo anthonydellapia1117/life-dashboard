@@ -6,6 +6,7 @@ import { compareByGrade, gradeOf, isPressing } from '../lib/grade';
 import type { Live } from '../lib/live';
 import { countNodes } from '../lib/progress';
 import { TRACK_META, partitionByTrack } from '../lib/track';
+import { CAPS } from '../lib/rail';
 import { Agenda } from '../components/Agenda';
 import { Alerts } from '../components/Alerts';
 import { Balance } from '../components/Balance';
@@ -64,8 +65,8 @@ export function Today({
     [actionable, now],
   );
   const { mine, tracks } = useMemo(() => partitionByTrack(open), [open]);
-  const focus = mine.slice(0, 3);
-  const rest = mine.slice(3);
+  const focus = mine.slice(0, CAPS.focus);
+  const rest = mine.slice(CAPS.focus);
   const done = useMemo(() => actionable.filter((n) => n.done), [actionable]);
 
   const pressing = mine.filter((n) => isPressing(gradeOf({ due: n.due, horizon: n.horizon, done: false }, now))).length;
@@ -132,7 +133,7 @@ export function Today({
 
           <section aria-label="Up next">
             <h2 className="section-heading">Up next</h2>
-            <NodeList nodes={rest} now={now} onToggle={live.toggleDone} onOpen={onOpen} empty="Nothing behind Focus." />
+            <NodeList nodes={rest} now={now} onToggle={live.toggleDone} onOpen={onOpen} empty="Nothing behind Focus." cap={CAPS.upNext} />
           </section>
 
           {tracks.map(({ track, items }) => (
@@ -141,7 +142,7 @@ export function Today({
                 {TRACK_META[track].heading} <span className="section-count">{items.length}</span>
               </h2>
               <p className="caption">{TRACK_META[track].caption}</p>
-              <NodeList nodes={items} now={now} onToggle={live.toggleDone} onOpen={onOpen} />
+              <NodeList nodes={items} now={now} onToggle={live.toggleDone} onOpen={onOpen} cap={CAPS.upNext} />
             </section>
           ))}
 

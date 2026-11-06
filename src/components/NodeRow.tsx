@@ -1,3 +1,4 @@
+import { useCapped } from './More';
 import { gradeOf } from '../lib/grade';
 import { bucketOf } from '../lib/bucket';
 import type { ResolvedNode } from '../lib/live';
@@ -70,6 +71,7 @@ export function NodeList({
   empty = 'Nothing here.',
   showArea = true,
   cards = false,
+  cap = 0,
 }: {
   nodes: ResolvedNode[];
   now: Date;
@@ -79,13 +81,19 @@ export function NodeList({
   showArea?: boolean;
   /** Each item as its own card instead of rows sharing one container - for the short lists that matter most. */
   cards?: boolean;
+  /** Draw at most this many rows and fold the rest behind "+N more". Zero shows everything. */
+  cap?: number;
 }) {
+  const { shown, more } = useCapped(nodes, cap);
   if (nodes.length === 0) return <p className="empty">{empty}</p>;
   return (
-    <div className={cards ? 'node-list node-list-cards' : 'node-list'}>
-      {nodes.map((node) => (
-        <NodeRow key={node.id} node={node} now={now} onToggle={onToggle} onOpen={onOpen} showArea={showArea} />
-      ))}
-    </div>
+    <>
+      <div className={cards ? 'node-list node-list-cards' : 'node-list'}>
+        {shown.map((node) => (
+          <NodeRow key={node.id} node={node} now={now} onToggle={onToggle} onOpen={onOpen} showArea={showArea} />
+        ))}
+      </div>
+      {more}
+    </>
   );
 }

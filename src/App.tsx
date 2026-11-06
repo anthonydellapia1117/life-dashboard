@@ -31,6 +31,7 @@ import { applyWorld, worldFor } from './lib/world';
 import type { EditFields } from './lib/edits';
 import { Header } from './components/Header';
 import { TopNav } from './components/TopNav';
+import { NextTab } from './components/NextTab';
 import { installFilterDom } from './lib/filter';
 import { bucketOf } from './lib/bucket';
 import { ClaudeTab } from './tabs/Claude';
@@ -420,7 +421,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {phase === 'unlocked' ? <TopNav active={route.zone} onChange={goToZone} /> : null}
+      {phase === 'unlocked' ? <TopNav active={route.zone} onChange={goToZone} now={now} /> : null}
       <div className="app-body">
         <div className="app-topbar">
           <Header title={title} asOf={data?.meta.asOf} unlocked={phase === 'unlocked'} onLock={handleLock} />
@@ -500,6 +501,7 @@ export default function App() {
                   </div>
                 </>
               )}
+              <NextTab zone={route.zone} onGo={goToZone} />
             </div>
           ) : null}
         </main>

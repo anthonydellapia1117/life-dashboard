@@ -1,4 +1,6 @@
 import { EmptyState } from './ui';
+import { CAPS } from '../lib/rail';
+import { useCapped } from './More';
 
 export interface Column<T> {
   key: string;
@@ -23,31 +25,35 @@ export function DataTable<T>({
   getRowId: (row: T) => string;
   emptyLabel?: string;
 }) {
+  const { shown, more } = useCapped(rows ?? [], CAPS.table);
   if (!rows || rows.length === 0) return <EmptyState label={emptyLabel} />;
   return (
-    <div className={columns.length <= 3 ? 'table-wrap compact' : 'table-wrap'}>
-      <table>
-        <thead>
-          <tr>
-            {columns.map((c) => (
-              <th key={c.key}>
-                <span className="th-label">{c.header}</span>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={getRowId(row)}>
+    <>
+      <div className={columns.length <= 3 ? 'table-wrap compact' : 'table-wrap'}>
+        <table>
+          <thead>
+            <tr>
               {columns.map((c) => (
-                <td key={c.key} data-label={c.header}>
-                  {c.render(row)}
-                </td>
+                <th key={c.key}>
+                  <span className="th-label">{c.header}</span>
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {shown.map((row) => (
+              <tr key={getRowId(row)}>
+                {columns.map((c) => (
+                  <td key={c.key} data-label={c.header}>
+                    {c.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {more}
+    </>
   );
 }

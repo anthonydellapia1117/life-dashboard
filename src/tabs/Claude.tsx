@@ -20,15 +20,18 @@ import {
   unreadCount,
   windowMs,
   type ClaudeChat,
+  type ClaudeCodeProject,
   type CodeRow,
   type TaskView,
   type WindowId,
 } from '../lib/claude';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { StatRow, StatTile } from '../components/StatTile';
+import { useCapped } from '../components/More';
+import { CAPS } from '../lib/rail';
 
-const STREAM_CAP = 12;
-const CODE_CAP = 15;
+const STREAM_CAP = CAPS.claudeStream;
+const CODE_CAP = CAPS.code;
 
 function browserStorage(): KeyValueStorage | undefined {
   try {
@@ -48,15 +51,6 @@ function when(at: number | undefined): string {
   return `${formatWeekdayMonthDay(d)}, ${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
 }
 
-function More({ hidden, open, onToggle }: { hidden: number; open: boolean; onToggle: () => void }) {
-  if (hidden <= 0 && !open) return null;
-  return (
-    <button type="button" className="cl-more" onClick={onToggle}>
-      {open ? 'Show less' : `+${hidden} more`}
-    </button>
-  );
-}
-
 function ChatStream({
   label,
   chats,
@@ -70,9 +64,7 @@ function ChatStream({
   now: Date;
   showAll: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const all = showAll || open;
-  const shown = all ? chats : chats.slice(0, STREAM_CAP);
+  const { shown, more } = useCapped(chats, STREAM_CAP, showAll);
   const unread = chats.filter((c) => isUnread(c, lastSeen)).length;
   return (
     <section className="cl-stream" aria-label={label}>
@@ -86,11 +78,7 @@ function ChatStream({
           const b = bucketFor(c.bucket);
           const at = toTime(c.updated);
           return (
-            <div
-              key={`${c.url}:${i}`}
-              className={`cl-row bucket-${b}${isUnread(c, lastSeen) ? ' is-unread' : ''}`}
-              data-bucket={b}
-            >
+            <div key={`${c.url}:${i}`} className={`cl-row bucket-${b}${isUnread(c, lastSeen) ? ' is-unread' : ''}`} data-bucket={b}>
               <span className="cl-dot" aria-hidden="true" />
               <span className="cl-main">
                 {c.url ? (
@@ -109,7 +97,7 @@ function ChatStream({
           );
         })}
       </div>
-      {showAll ? null : <More hidden={chats.length - STREAM_CAP} open={open} onToggle={() => setOpen(!open)} />}
+      {more}
     </section>
   );
 }
@@ -124,20 +112,14 @@ function TaskRow({ v, now }: { v: TaskView; now: Date }) {
       <span className="cl-meta">{task.schedule ?? ''}</span>
       <span className="cl-task-line">
         <span>Next: {task.enabled ? (next !== undefined ? when(next) : task.next || 'not scheduled') : task.next || 'paused'}</span>
-        <span>
-          {last !== undefined
-            ? `Last: ${rel(last, '', now)}${task.status ? `, ${task.status}` : ''}`
-            : 'last run unknown'}
-        </span>
+        <span>{last !== undefined ? `Last: ${rel(last, '', now)}${task.status ? `, ${task.status}` : ''}` : 'last run unknown'}</span>
       </span>
     </div>
   );
 }
 
 function CodeList({ rows, now, cap, showAll }: { rows: CodeRow[]; now: Date; cap: number; showAll: boolean }) {
-  const [open, setOpen] = useState(false);
-  const all = showAll || open;
-  const shown = all ? rows : rows.slice(0, cap);
+  const { shown, more } = useCapped(rows, cap, showAll);
   return (
     <>
       <div className="group cl-list">
@@ -159,7 +141,39 @@ function CodeList({ rows, now, cap, showAll }: { rows: CodeRow[]; now: Date; cap
           </div>
         ))}
       </div>
-      {showAll ? null : <More hidden={rows.length - cap} open={open} onToggle={() => setOpen(!open)} />}
+      {more}
+    </>
+  );
+}
+
+function ProjectList({ projects, now, showAll }: { projects: ClaudeCodeProject[]; now: Date; showAll: boolean }) {
+  const { shown, more } = useCapped(projects, CODE_CAP, showAll);
+  return (
+    <>
+      <div className="group cl-list">
+        {projects.length === 0 ? <p className="empty cl-pad">No projects indexed.</p> : null}
+        {shown.map((p) => {
+          const b = bucketFor(p.bucket);
+          return (
+            <div key={p.project} className={`cl-row cl-proj bucket-${b}`} data-bucket={b}>
+              <span className="cl-dot" aria-hidden="true" />
+              <span className="cl-main">
+                <span className="cl-title">{p.project}</span>
+                <span className="cl-meta">
+                  {p.sessions} session{p.sessions === 1 ? '' : 's'}
+                </span>
+                {p.recent.slice(0, 3).map((t, i) => (
+                  <span key={i} className="cl-recent">
+                    {t}
+                  </span>
+                ))}
+              </span>
+              <span className="cl-when">{rel(toTime(p.last_at) ?? toTime(p.last), p.last, now)}</span>
+            </div>
+          );
+        })}
+      </div>
+      {more}
     </>
   );
 }
@@ -170,15 +184,7 @@ function CodeList({ rows, now, cap, showAll }: { rows: CodeRow[]; now: Date; cap
  * stacking centre, right, left under 900px. Every row carries data-bucket so
  * the global filter dims and rings it with no extra wiring.
  */
-export function ClaudeTab({
-  data,
-  now,
-}: {
-  data: LifeData;
-  nodes: ResolvedNode[];
-  now: Date;
-  onOpen: (id: string) => void;
-}) {
+export function ClaudeTab({ data, now }: { data: LifeData; nodes: ResolvedNode[]; now: Date; onOpen: (id: string) => void }) {
   const feed = data.claude;
   const storage = useMemo(browserStorage, []);
   const [win, setWin] = useState<WindowId>(() => loadWindow(storage));
@@ -217,16 +223,19 @@ export function ClaudeTab({
           <StatTile key={k.label} label={k.label} value={k.value} alert={k.alert} series={k.series} />
         ))}
       </StatRow>
-      <p className="footnote cl-stamp">
-        Refreshed {feed.generated_at ? when(toTime(feed.generated_at)) : feed.generated ?? 'unknown'}
-      </p>
+      <p className="footnote cl-stamp">Refreshed {feed.generated_at ? when(toTime(feed.generated_at)) : (feed.generated ?? 'unknown')}</p>
 
       <div className="cl-grid">
         <section className="cl-col cl-center" aria-label="Claude">
           <div className="cl-head">
             <h2 className="title2">Claude</h2>
             <span className="cl-actions">
-              <button type="button" className="btn-tinted" onClick={() => setLastSeen(markAllRead(storage, new Date()))} disabled={unread === 0}>
+              <button
+                type="button"
+                className="btn-tinted"
+                onClick={() => setLastSeen(markAllRead(storage, new Date()))}
+                disabled={unread === 0}
+              >
                 Mark all read
               </button>
               <button type="button" className="btn-tinted" aria-pressed={showAll} onClick={() => setShowAll(!showAll)}>
@@ -257,29 +266,7 @@ export function ClaudeTab({
           {codeView === 'latest' ? (
             <CodeList rows={latest} now={now} cap={CODE_CAP} showAll={showAll} />
           ) : (
-            <div className="group cl-list">
-              {projects.length === 0 ? <p className="empty cl-pad">No projects indexed.</p> : null}
-              {projects.map((p) => {
-                const b = bucketFor(p.bucket);
-                return (
-                  <div key={p.project} className={`cl-row cl-proj bucket-${b}`} data-bucket={b}>
-                    <span className="cl-dot" aria-hidden="true" />
-                    <span className="cl-main">
-                      <span className="cl-title">{p.project}</span>
-                      <span className="cl-meta">
-                        {p.sessions} session{p.sessions === 1 ? '' : 's'}
-                      </span>
-                      {p.recent.slice(0, 3).map((t, i) => (
-                        <span key={i} className="cl-recent">
-                          {t}
-                        </span>
-                      ))}
-                    </span>
-                    <span className="cl-when">{rel(toTime(p.last_at) ?? toTime(p.last), p.last, now)}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <ProjectList projects={projects} now={now} showAll={showAll} />
           )}
           {cloud.length > 0 ? (
             <>
