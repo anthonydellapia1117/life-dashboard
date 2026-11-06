@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { BUCKETS } from '../lib/bucket';
 import { useBucketFilter } from '../lib/filter';
 import { ZONE_IDS, ZONE_LABELS, type ZoneId } from '../lib/routing';
@@ -16,13 +17,21 @@ import { Rail } from './Rail';
  */
 export function TopNav({ active, onChange, now }: { active: ZoneId; onChange: (id: ZoneId) => void; now: Date }) {
   const { selected, toggle, clear } = useBucketFilter();
+  const tabsRef = useRef<HTMLElement>(null);
+  // On a phone the tab strip scrolls sideways; bring the active tab to the middle so it is never off-screen.
+  useEffect(() => {
+    const strip = tabsRef.current?.querySelector<HTMLElement>('.seg');
+    const item = strip?.querySelector<HTMLElement>('.seg-item.is-active');
+    if (!strip || !item || strip.scrollWidth <= strip.clientWidth) return;
+    strip.scrollLeft = item.offsetLeft - (strip.clientWidth - item.offsetWidth) / 2;
+  }, [active]);
   return (
     <header className="topnav">
       <div className="topnav-inner">
         <a className="topnav-mark" href="#lifeos" onClick={() => onChange('lifeos')}>
           Life OS
         </a>
-        <nav className="topnav-tabs" aria-label="Tabs">
+        <nav className="topnav-tabs" aria-label="Tabs" ref={tabsRef}>
           <div className="seg" role="tablist">
             {ZONE_IDS.map((id) => (
               <a

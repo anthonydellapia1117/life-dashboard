@@ -1,3 +1,4 @@
+import { kpiCounts, type EisenInput } from '../lib/eisenhower';
 import { Sparkline } from './ui';
 
 export interface StatTileProps {
@@ -44,5 +45,20 @@ export function StatRow({ label, children }: { label: string; children: React.Re
     <section className="stat-row" aria-label={label}>
       {children}
     </section>
+  );
+}
+
+/**
+ * The shared first row on every list tab: Overdue, Due this week, Open, most
+ * important first. Same counts as the Life OS row (kpiCounts).
+ */
+export function KeyNumbers({ nodes, now }: { nodes: ReadonlyArray<EisenInput>; now: Date }) {
+  const kpis = kpiCounts([...nodes], now);
+  return (
+    <StatRow label="Key numbers">
+      <StatTile label="Overdue" value={kpis.overdue} alert={kpis.overdue > 0} />
+      <StatTile label="Due this week" value={kpis.dueThisWeek} />
+      <StatTile label="Open" value={kpis.open} />
+    </StatRow>
   );
 }

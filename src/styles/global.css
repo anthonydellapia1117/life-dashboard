@@ -1464,3 +1464,13 @@ a.stat-tile:hover { background: color-mix(in srgb, var(--fill) 50%, var(--card))
 
 /* Generous whitespace between groups. */
 .tab-page > section, .tab-page > .grid, .tab-page > .card, .section-body > section, .lifeos-page > section { margin-bottom: var(--space-6); }
+
+/* Red-team round 1. */
+html, body { overflow-x: clip; }
+.project-card { min-width: 0; overflow-wrap: anywhere; }
+.next-swatch { outline: 1px solid color-mix(in srgb, var(--label) 30%, transparent); outline-offset: -1px; }
+@media (max-width: 1023px) {
+  /* The tab strip scrolls on a phone; fade the right edge so the hidden tabs read as more, not as missing. */
+  .topnav-tabs { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+  .topnav-tabs .seg { padding-right: 24px; }
+}

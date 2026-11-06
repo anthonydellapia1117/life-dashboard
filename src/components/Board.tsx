@@ -7,6 +7,8 @@ import type { EditFields } from '../lib/edits';
 import type { ResolvedNode } from '../lib/live';
 import { GradeIcon } from './GradeIcon';
 import { ViewControls } from './ViewControls';
+import { useCapped } from './More';
+import { CAPS } from '../lib/rail';
 
 // Board zoom scales column width and type through --map-zoom, so the columns reflow rather than blur.
 const ZOOM = { min: 0.5, max: 1.5 };
@@ -100,6 +102,17 @@ function prevGrade(grade: Grade): Grade {
 function nextGrade(grade: Grade): Grade {
   const i = MOVE_ORDER.indexOf(grade);
   return MOVE_ORDER[Math.min(MOVE_ORDER.length - 1, i + 1)];
+}
+
+/** One column's cards, capped so a full column ends in "+N more" rather than a wall. */
+function ColumnItems({ items, render }: { items: ResolvedNode[]; render: (node: ResolvedNode) => React.ReactNode }) {
+  const { shown, more } = useCapped(items, CAPS.boardColumn);
+  return (
+    <>
+      {shown.map(render)}
+      {more}
+    </>
+  );
 }
 
 export function Board({
@@ -222,7 +235,7 @@ export function Board({
               {column.items.length === 0 ? (
                 <p className="board-empty">Empty</p>
               ) : (
-                column.items.map((node) => {
+                <ColumnItems items={column.items} render={(node) => {
                   const grade = gradeOf({ due: node.due, horizon: node.horizon, done: node.done }, now);
                   const movable = grade !== 'done';
                   return (
@@ -237,7 +250,7 @@ export function Board({
                       canRight={movable && grade !== MOVE_ORDER[MOVE_ORDER.length - 1]}
                     />
                   );
-                })
+                }} />
               )}
             </div>
           </section>

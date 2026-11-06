@@ -5,6 +5,8 @@ import { countNodes } from '../lib/progress';
 import { GradeDistribution, ProgressBar } from './Progress';
 import { NodeList } from './NodeRow';
 import { Disclosure } from './Disclosure';
+import { KeyNumbers } from './StatTile';
+import { CAPS } from '../lib/rail';
 
 /**
  * The strip every section page now opens with: how much of this part of life
@@ -39,6 +41,7 @@ export function SectionOverview({
 
   return (
     <section className="overview" aria-label={`${title} progress`}>
+      <KeyNumbers nodes={nodes} now={now} />
       <ProgressBar counts={counts} label={title} />
       <GradeDistribution nodes={nodes} now={now} />
       <NodeList
@@ -48,6 +51,7 @@ export function SectionOverview({
         onOpen={onOpen}
         empty="All clear here."
         showArea={false}
+        cap={CAPS.upNext}
       />
       {done.length > 0 ? (
         <Disclosure summary={`${done.length} done`}>

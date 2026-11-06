@@ -59,4 +59,5 @@ export const CAPS = {
   table: 8,
   claudeStream: 12,
   code: 15,
+  boardColumn: 8,
 } as const;

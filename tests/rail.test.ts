@@ -81,6 +81,6 @@ describe('capItems', () => {
   });
 
   it('keeps the caps the spec names', () => {
-    expect(CAPS).toEqual({ focus: 3, upNext: 5, agendaPerDay: 5, table: 8, claudeStream: 12, code: 15 });
+    expect(CAPS).toEqual({ focus: 3, upNext: 5, agendaPerDay: 5, table: 8, claudeStream: 12, code: 15, boardColumn: 8 });
   });
 });

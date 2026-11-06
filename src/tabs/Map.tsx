@@ -1,3 +1,4 @@
+import { KeyNumbers } from '../components/StatTile';
 import { useMemo, useState } from 'react';
 import type { SealedBlob } from '../crypto';
 import type { SectionId } from '../lib/routing';
@@ -85,6 +86,7 @@ export function MapTab({
         </>
       ) : (
         <>
+          <KeyNumbers nodes={filtered} now={now} />
           <ProgressBar counts={counts} label={area === 'all' ? 'Everything' : area} />
           <GradeDistribution nodes={filtered} now={now} title="Where it all sits" />
           {section === 'roadmap' ? (
