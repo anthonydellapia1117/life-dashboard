@@ -1404,6 +1404,10 @@ a.stat-tile:hover { background: color-mix(in srgb, var(--fill) 50%, var(--card))
 .stat-tile .sparkline { display: block; width: 100%; height: 28px; margin-top: auto; overflow: visible; }
 .stat-tile .sparkline path { stroke: var(--accent); }
 @media (max-width: 640px) { .stat-tile-value { font-size: 44px; } }
+/* A long value (currency, a date) sizes to its tile: width over its character count, never above the figure size. */
+.stat-tile.is-long { container-type: inline-size; }
+.stat-tile.is-long .stat-tile-value { font-size: clamp(22px, calc(100cqi / (var(--chars) * 0.62)), 52px); }
+@media (max-width: 640px) { .stat-tile.is-long .stat-tile-value { font-size: clamp(22px, calc(100cqi / (var(--chars) * 0.62)), 44px); } }
 /* Snapshot strips keep the shared tile; they no longer draw a hairline grid. */
 .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); background: none; border: 0; border-radius: 0; overflow: visible; }
 .kpi-strip .stat-tile { background: var(--card); }

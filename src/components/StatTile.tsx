@@ -19,11 +19,24 @@ export interface StatTileProps {
  * display face, the label in small caps below, then an optional delta and a
  * sparkline in the world accent. Every tab's key numbers use this.
  */
+/**
+ * Values longer than four characters (a currency figure, a date) shrink to fit
+ * their tile instead of clipping. Returns the character count the CSS divides
+ * the tile width by, or null for a short figure that keeps the full size.
+ */
+export function valueFitChars(value: string | number): number | null {
+  const n = String(value).length;
+  return n > 4 ? n : null;
+}
+
 export function StatTile({ label, value, delta, series, href, alert }: StatTileProps) {
-  const className = `stat-tile${alert ? ' is-alert' : ''}`;
+  const chars = valueFitChars(value);
+  const className = `stat-tile${alert ? ' is-alert' : ''}${chars ? ' is-long' : ''}`;
   const body = (
     <>
-      <span className="stat-tile-value">{value}</span>
+      <span className="stat-tile-value" style={chars ? ({ '--chars': chars } as React.CSSProperties) : undefined}>
+        {value}
+      </span>
       <span className="stat-tile-label">{label}</span>
       {delta ? <span className="stat-tile-delta">{delta}</span> : null}
       {series && series.length >= 2 ? <Sparkline points={series} width={120} height={28} /> : null}
