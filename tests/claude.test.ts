@@ -17,6 +17,7 @@ import {
   windowMs,
   type ClaudeChat,
   type ClaudeTask,
+  perDay,
 } from '../src/lib/claude';
 import type { KeyValueStorage } from '../src/lib/filter';
 
@@ -163,5 +164,21 @@ describe('scheduled task window', () => {
     saveWindow('2w', s);
     expect(loadWindow(s)).toBe('2w');
     expect(() => saveWindow('1m', blocked)).not.toThrow();
+  });
+});
+
+describe('perDay', () => {
+  const row = (updated?: string): ClaudeChat => ({ title: 't', url: 'u', project: '', when: '', updated, surface: 'chat' });
+  const now = new Date(2026, 10, 6, 15, 0);
+
+  it('counts rows per local day, oldest first, ending today', () => {
+    const out = perDay([row('2026-11-06 09:00'), row('2026-11-06 22:00'), row('2026-11-04 08:00'), row('2026-11-01 08:00')], 3, now);
+    expect(out).toEqual([1, 0, 2]);
+  });
+
+  it('skips rows with no parseable timestamp and handles an empty feed', () => {
+    expect(perDay([row(), row('not a date')], 2, now)).toEqual([0, 0]);
+    expect(perDay(undefined, 4, now)).toEqual([0, 0, 0, 0]);
+    expect(perDay([row('2026-11-06 09:00')], 0, now)).toEqual([]);
   });
 });

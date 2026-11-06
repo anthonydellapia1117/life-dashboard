@@ -242,3 +242,24 @@ export function cloudRows(data: ClaudeData | undefined): CodeRow[] {
     }))
     .sort((a, b) => (b.at ?? -Infinity) - (a.at ?? -Infinity));
 }
+
+/**
+ * How many rows were updated on each of the last `days` local days, oldest
+ * first, ending today. Rows with no parseable `updated` are left out, so a
+ * feed with no timestamps reads as a flat zero line rather than a guess.
+ */
+export function perDay(chats: ClaudeChat[] | undefined, days: number, now: Date): number[] {
+  const out = new Array<number>(Math.max(0, days)).fill(0);
+  if (out.length === 0) return out;
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1)).getTime();
+  for (const c of chats ?? []) {
+    const t = toTime(c.updated);
+    if (t === undefined || t < start || t >= end) continue;
+    const d = new Date(t);
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const idx = Math.round((dayStart - start) / 86_400_000);
+    if (idx >= 0 && idx < out.length) out[idx] += 1;
+  }
+  return out;
+}

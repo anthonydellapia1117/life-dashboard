@@ -90,8 +90,8 @@ export function Sparkline({ points, width = 160, height = 32 }: { points: number
     })
     .join(' ');
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="sparkline" aria-hidden="true">
-      <path d={d} fill="none" strokeWidth={2} />
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="sparkline" aria-hidden="true">
+      <path d={d} fill="none" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }

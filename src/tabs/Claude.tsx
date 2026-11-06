@@ -12,6 +12,7 @@ import {
   isUnread,
   loadWindow,
   markAllRead,
+  perDay,
   saveWindow,
   stream,
   taskGroups,
@@ -24,6 +25,7 @@ import {
   type WindowId,
 } from '../lib/claude';
 import { SegmentedControl } from '../components/SegmentedControl';
+import { StatRow, StatTile } from '../components/StatTile';
 
 const STREAM_CAP = 12;
 const CODE_CAP = 15;
@@ -200,9 +202,9 @@ export function ClaudeTab({
 
   const unread = unreadCount(feed.chats, lastSeen);
   const projects = feed.code?.projects ?? [];
-  const kpis: Array<{ label: string; value: number; alert?: boolean }> = [
-    { label: 'Chats', value: chatStream.length },
-    { label: 'Cowork tasks', value: coworkStream.length },
+  const kpis: Array<{ label: string; value: number; alert?: boolean; series?: number[] }> = [
+    { label: 'Chats', value: chatStream.length, series: perDay(chatStream, 14, now) },
+    { label: 'Cowork tasks', value: coworkStream.length, series: perDay(coworkStream, 14, now) },
     { label: 'Code sessions on this Mac', value: feed.code?.total ?? 0 },
     { label: 'Scheduled tasks active', value: groups.activeCount },
     { label: 'Unread', value: unread, alert: unread > 0 },
@@ -210,14 +212,11 @@ export function ClaudeTab({
 
   return (
     <div className="tab-page claude-page">
-      <section className="cl-kpis" aria-label="Claude at a glance">
+      <StatRow label="Claude at a glance">
         {kpis.map((k) => (
-          <div key={k.label} className="glance-kpi">
-            <span className="glance-kpi-label">{k.label}</span>
-            <span className={`glance-kpi-value${k.alert ? ' is-unread-kpi' : ''}`}>{k.value}</span>
-          </div>
+          <StatTile key={k.label} label={k.label} value={k.value} alert={k.alert} series={k.series} />
         ))}
-      </section>
+      </StatRow>
       <p className="footnote cl-stamp">
         Refreshed {feed.generated_at ? when(toTime(feed.generated_at)) : feed.generated ?? 'unknown'}
       </p>

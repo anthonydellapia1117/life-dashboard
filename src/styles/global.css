@@ -10,7 +10,7 @@
 :root {
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
   --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
-  --text-xs-size: 0.8rem; --text-xs-line: 1rem;
+  --text-xs-size: 0.75rem; --text-xs-line: 1rem;
   --text-base-size: 1rem; --text-base-line: 1.5rem;
   --text-md-size: 1.25rem; --text-md-line: 1.75rem;
   --text-lg-size: 1.5625rem; --text-lg-line: 2rem;
@@ -26,8 +26,8 @@
   --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Inter, system-ui, sans-serif;
   --display-weight: 700; --display-tracking: -0.022em;
   /* Apple type scale, size / weight. */
-  --t-large: 34px; --t-title: 28px; --t-title2: 22px; --t-title3: 20px; --t-headline: 17px;
-  --t-body: 17px; --t-callout: 16px; --t-subhead: 15px; --t-footnote: 13px; --t-caption: 12px; --t-caption2: 11px;
+  --t-large: 28px; --t-title: 28px; --t-title2: 22px; --t-title3: 22px; --t-headline: 17px;
+  --t-body: 17px; --t-callout: 15px; --t-subhead: 15px; --t-footnote: 12px; --t-caption: 12px; --t-caption2: 12px;
   --radius-s: 10px; --radius-m: 14px; --radius-l: 20px;
   --radius-control: var(--radius-s); --radius-card: var(--radius-m); --radius-item: var(--radius-s); --radius-pill: 999px;
   --shadow-card: none; --shadow-item: none;
@@ -180,7 +180,7 @@ button:active, a:active, summary:active { opacity: 0.6; }
 .nav-item {
   flex: 1; display: flex; flex-direction: column; place-items: center; justify-content: center; gap: 2px;
   min-height: var(--nav-size); background: none; border: none;
-  color: var(--text-3); font-size: 0.6875rem; line-height: 1; font-weight: 700; cursor: pointer;
+  color: var(--text-3); font-size: 0.75rem; line-height: 1; font-weight: 700; cursor: pointer;
 }
 .nav-item.active { color: var(--accent); }
 .nav-icon { flex-shrink: 0; }
@@ -192,7 +192,7 @@ button:active, a:active, summary:active { opacity: 0.6; }
 .app-title { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 1.5rem; line-height: 1.2; letter-spacing: -0.02em; color: var(--text-1); }
 .app-header-meta {
   display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-1);
-  font-size: 0.8125rem; line-height: var(--text-xs-line); font-weight: 600; color: var(--text-3);
+  font-size: 0.75rem; line-height: var(--text-xs-line); font-weight: 600; color: var(--text-3);
 }
 /* Standalone (added to home screen, Safari's own chrome gone): a bit of extra top room past the safe area alone. */
 @media (display-mode: standalone) {
@@ -202,7 +202,7 @@ button:active, a:active, summary:active { opacity: 0.6; }
   display: inline-flex; place-items: center; gap: var(--space-1); margin-left: auto;
   min-height: 44px; padding: 0 var(--space-3);
   border: none; border-radius: var(--radius-pill);
-  background: var(--surface); box-shadow: var(--shadow-item); color: var(--text-2); font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+  background: var(--surface); box-shadow: var(--shadow-item); color: var(--text-2); font-size: 0.75rem; font-weight: 600; cursor: pointer;
 }
 .lock-button:hover { background: var(--surface-2); color: var(--text-1); }
 .segmented {
@@ -212,7 +212,7 @@ button:active, a:active, summary:active { opacity: 0.6; }
 .segmented-item {
   flex-shrink: 0; min-height: 44px; padding: 0 var(--space-3);
   border: none; border-radius: var(--radius-pill);
-  background: none; color: var(--text-3); font-size: 0.8125rem; font-weight: 700;
+  background: none; color: var(--text-3); font-size: 0.75rem; font-weight: 700;
   cursor: pointer; white-space: nowrap;
 }
 .segmented-item.active { color: var(--text-1); background: var(--surface); box-shadow: var(--shadow-item); }
@@ -353,7 +353,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 /* Soft hero: the label, then the figure with its sentence beside it, then the bar - laid out by one grid, so the markup stays a plain list. */
 .hero { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-3); align-items: end; padding: var(--space-2) 0; }
 .hero-eyebrow { grid-column: 1 / -1; font-size: 0.9375rem; line-height: 1.4; font-weight: 600; color: var(--text-3); }
-.hero-figure { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 4.75rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: proportional-nums; color: var(--text-1); margin-top: var(--space-1); }
+.hero-figure { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 4rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: proportional-nums; color: var(--text-1); margin-top: var(--space-1); }
 .hero-sub { color: var(--text-2); font-weight: 500; padding-bottom: var(--space-3); }
 .hero-sub strong { color: var(--text-1); font-weight: 700; }
 .hero .progress-bare { grid-column: 1 / -1; }
@@ -561,7 +561,7 @@ tr:last-child td { border-bottom: none; }
 /* A caption that introduces a list needs air before the list's top rule. */
 .caption + .node-list { margin-top: var(--space-3); }
 .progress-head { display: flex; flex-wrap: wrap; place-items: baseline; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-2); }
-.progress-label { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+.progress-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
 .progress-count { font-size: var(--text-xs-size); color: var(--text-2); font-variant-numeric: tabular-nums; }
 .progress-count strong { color: var(--text-1); }
 .progress-left { font-size: var(--text-xs-size); color: var(--text-3); font-variant-numeric: tabular-nums; }
@@ -577,7 +577,7 @@ tr:last-child td { border-bottom: none; }
 
 /* Grade distribution - 2px gaps so two grades never melt into one band. */
 .dist { margin-bottom: var(--space-4); background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-4) calc(var(--space-4) + 2px); }
-.dist-title { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: var(--space-3); }
+.dist-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: var(--space-3); }
 .dist-bar { display: flex; gap: 3px; height: 12px; }
 .dist-seg { background: var(--grade); border-radius: var(--radius-pill); min-width: 12px; }
 .dist-legend { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; margin-top: var(--space-3); }
@@ -611,7 +611,7 @@ tr:last-child td { border-bottom: none; }
 }
 .board-head { display: flex; place-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
 .board-head .grade-icon { color: var(--grade); }
-.board-title { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); }
+.board-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); }
 .board-count { margin-left: auto; min-width: 24px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--surface); font-size: 0.75rem; font-weight: 700; text-align: center; color: var(--text-1); }
 .board-items { display: flex; flex-direction: column; gap: var(--space-2); }
 .board-empty { font-size: var(--text-xs-size); color: var(--text-3); padding: var(--space-2) 0; }
@@ -641,7 +641,7 @@ tr:last-child td { border-bottom: none; }
 .road-column { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-4); }
 .road-bucket { border-left: 2px solid var(--border); padding-left: var(--space-3); }
 .road-head { display: flex; place-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2); }
-.road-month { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; line-height: 1.3; color: var(--text-1); }
+.road-month { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; line-height: 1.3; color: var(--text-1); }
 .road-count { font-size: var(--text-xs-size); color: var(--text-3); font-variant-numeric: tabular-nums; }
 .road-clear { font-size: var(--text-xs-size); color: var(--text-3); }
 /* A painted band carries the grade: the corner radius clips it cleanly, where a border would end square and an inset shadow would outline every edge. */
@@ -688,13 +688,6 @@ tr:last-child td { border-bottom: none; }
 .brain-detail-body { color: var(--text-2); font-size: var(--text-xs-size); margin-bottom: var(--space-3); }
 
 /* Momentum - streak, level, trend, and the day bars. */
-.momentum-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
-@media (min-width: 560px) { .momentum-grid { grid-template-columns: 1fr 1fr; } }
-.momentum-card { display: flex; place-items: center; gap: var(--space-4); background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-4) calc(var(--space-4) + 2px); }
-.momentum-card-body { flex: 1; min-width: 0; }
-.momentum-card-value { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.03em; color: var(--text-1); font-variant-numeric: proportional-nums; }
-.momentum-card-label { color: var(--text-2); font-size: var(--text-xs-size); }
-.momentum-card-sub { color: var(--text-3); font-size: var(--text-xs-size); margin-top: var(--space-1); }
 .spark { display: flex; place-items: flex-end; gap: 2px; height: 64px; }
 .spark-col { flex: 1; height: 100%; display: flex; place-items: flex-end; }
 /* min-height in px, not the percentage the component passes: 3% of a 64px
@@ -741,7 +734,7 @@ tr:last-child td { border-bottom: none; }
 .sheet-grab { width: 36px; height: 4px; border-radius: 999px; background: var(--border); margin: 0 auto; }
 .field { display: flex; flex-direction: column; gap: var(--space-1); }
 .field-inline { flex-direction: row; place-items: center; gap: var(--space-2); }
-.field-label { font-size: 0.8125rem; font-weight: 700; color: var(--text-2); }
+.field-label { font-size: 0.75rem; font-weight: 700; color: var(--text-2); }
 .field-input {
   min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
   border: 1px solid var(--border); background: var(--bg); color: var(--text-1); font-size: var(--text-base-size);
@@ -783,10 +776,6 @@ input[type='checkbox'] { accent-color: var(--accent); }
 
 /* Life OS view: KPI strip, bucket pills, Eisenhower 2x2, 7-day strip. Spacing and type use the existing tokens. */
 .lifeos { display: flex; flex-direction: column; gap: var(--space-4); }
-.eis-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
-.eis-kpi { background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow-item); border-radius: var(--radius-item); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-1); }
-.eis-kpi-label { font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-2); }
-.eis-kpi-value { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); font-size: var(--text-xl-size); line-height: var(--text-xl-line); font-variant-numeric: tabular-nums; }
 .eis-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .eis-pill { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-3); border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); font: inherit; font-size: var(--text-xs-size); cursor: pointer; }
 .eis-pill-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bucket); }
@@ -833,7 +822,7 @@ input[type='checkbox'] { accent-color: var(--accent); }
 
 /* Shell: the nav sits on top on every width now. */
 .nav-bar { display: none; }
-.app-title { font: 700 var(--t-large) / 41px var(--font-display); letter-spacing: -0.026em; }
+.app-title { font: 700 var(--t-large) / 34px var(--font-display); letter-spacing: -0.026em; }
 .app-header-meta { font-size: var(--t-footnote); font-weight: 400; color: var(--text-3); }
 .topnav ~ .app-body .app-header { padding-top: var(--space-4); }
 .lock-button { background: var(--fill); color: var(--blue); font-size: var(--t-subhead); font-weight: 500; min-height: 34px; }
@@ -922,7 +911,7 @@ tr.is-match td:first-child { box-shadow: inset 3px 0 0 var(--ring); }
 @media (prefers-reduced-motion: reduce) { [data-bucket] { transition: none; } }
 
 /* Grouped cards: white on grey, one radius, no shadow, inset 0.5px hairlines. */
-.card, .node-list, .dist, .capture-card, .datactl, .momentum-card, .eis-quad, .project-card, .brain-detail, .unlock-card, .group {
+.card, .node-list, .dist, .capture-card, .datactl, .eis-quad, .project-card, .brain-detail, .unlock-card, .group {
   background: var(--card); border: 0; box-shadow: none; border-radius: var(--radius-m);
 }
 .group-pad { padding: var(--space-4); }
@@ -944,7 +933,7 @@ tr.is-match td:first-child { box-shadow: inset 3px 0 0 var(--ring); }
 }
 .eis-quad-title { font-size: var(--t-headline); color: var(--label); }
 .action-group-label { border-bottom-width: 0.5px; }
-.hero-figure, .stat-tile-value, .momentum-card-value, .ring-pct { font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.hero-figure, .stat-tile-value, .ring-pct { font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .hero-eyebrow { font-size: var(--t-subhead); font-weight: 400; color: var(--label-2); }
 .btn { border: 0; background: var(--fill); color: var(--blue); font-weight: 500; border-radius: var(--radius-s); }
 .btn-primary { background: var(--blue); color: #fff; }
@@ -970,9 +959,6 @@ input[type='checkbox'] { accent-color: var(--blue); }
 .today-page::before, .momentum::before { content: none; }
 
 /* KPI tiles: Today's Eisenhower strip, Snapshot, Life OS glance. */
-.eis-kpi, .glance-kpi { background: var(--card); border: 0; box-shadow: none; border-radius: var(--radius-m); padding: var(--space-3) var(--space-4); }
-.eis-kpi-label, .glance-kpi-label { font-size: var(--t-footnote); color: var(--label-2); }
-.eis-kpi-value, .glance-kpi-value { font: 700 var(--t-title) / 34px var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--label); }
 .kpi-strip { gap: 0.5px; background: var(--separator); border: 0; border-radius: var(--radius-m); }
 .kpi-strip .stat-tile { background: var(--card); }
 
@@ -991,9 +977,6 @@ input[type='checkbox'] { accent-color: var(--blue); }
 
 /* Today at a glance: three KPIs and the next three calendar items, all links to #today. */
 .glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
-.glance-kpi { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; }
-.glance-kpi:hover { background: color-mix(in srgb, var(--fill) 50%, var(--card)); }
-.glance-kpi-value.is-alert { color: var(--red); }
 .glance-cal { grid-column: 1 / -1; padding: 0 var(--space-4); }
 .glance-event { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; color: var(--label); text-decoration: none; }
 .glance-event + .glance-event { border-top: 0.5px solid var(--separator); }
@@ -1074,9 +1057,6 @@ input[type='checkbox'] { accent-color: var(--blue); }
 :root[data-theme='dark'] { --unread-tint: rgba(255, 159, 10, 0.24); }
 
 .claude-page .title2 { margin: 0; }
-.cl-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-@media (min-width: 640px) { .cl-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-.glance-kpi-value.is-unread-kpi { color: var(--orange); }
 .cl-stamp { margin: var(--space-2) var(--space-1) var(--space-4); }
 .cl-empty { padding: var(--space-6) var(--space-1); }
 
@@ -1290,8 +1270,8 @@ a.cl-title:hover { color: var(--blue); }
   --glass: color-mix(in srgb, var(--world-ground) 72%, transparent);
 }
 /* Inside a card the ink, lines and accent switch to the card steps, so component CSS recolours with no per-component edit. */
-:root[data-world]:not([data-world='neutral']) :is(.card, .group, .glance-kpi, .eis-kpi, .tile, .stat-tile, table, .node-list,
-  .dist, .capture-card, .datactl, .momentum-card, .eis-quad, .eis-day, .project-card, .brain-detail, .sheet, .web,
+:root[data-world]:not([data-world='neutral']) :is(.card, .group, .tile, .stat-tile, table, .node-list,
+  .dist, .capture-card, .datactl, .eis-quad, .eis-day, .project-card, .brain-detail, .sheet, .web,
   .agenda-day, .alert, .focus-item, .unlock-card, .kpi-strip) {
   --label: var(--world-card-ink); --text-1: var(--world-card-ink);
   --label-2: var(--world-card-ink-2); --text-2: var(--world-card-ink-2); --text-3: var(--world-card-ink-2);
@@ -1302,7 +1282,7 @@ a.cl-title:hover { color: var(--blue); }
 }
 :root[data-world]:not([data-world='neutral']) :is(.btn-primary, .btn-tinted[aria-pressed='true'], .fab, .unlock-button, .capture-save) { color: var(--on-accent); }
 :root[data-world='build'] a { text-decoration: underline; text-underline-offset: 2px; }
-:root[data-world='build'] :is(.seg-item, .segmented-item, .topnav-mark, .glance-kpi, .tile) { text-decoration: none; }
+:root[data-world='build'] :is(.seg-item, .segmented-item, .topnav-mark, .stat-tile, .tile) { text-decoration: none; }
 :root[data-world='build'] body {
   background-image:
     repeating-linear-gradient(0deg, var(--world-grid) 0 1px, transparent 1px 24px),
@@ -1329,11 +1309,57 @@ a.cl-title:hover { color: var(--blue); }
 .app-header .lock-button { background: color-mix(in srgb, var(--world-band-ink) 12%, transparent); color: var(--world-band-ink); }
 
 /* Transitions: background, colour and border only, on the few surfaces that carry the world. */
-html, body, .topnav, .app-header, .card, .group, .glance-kpi, .tile {
+html, body, .topnav, .app-header, .card, .group, .stat-tile, .tile {
   transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease;
 }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 250ms; }
 @media (prefers-reduced-motion: reduce) {
-  html, body, .topnav, .app-header, .card, .group, .glance-kpi, .tile { transition: none; }
+  html, body, .topnav, .app-header, .card, .group, .stat-tile, .tile { transition: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
+
+/* ==========================================================================
+   Type scale. Display (Space Grotesk): 64 hero, 52 figure (44 phone), 28, 22.
+   Body (system): 17, 15, 12. Controls read at 15, captions and meta at 12.
+   ========================================================================== */
+h1, h2, h3, .title1, .title2, .title3, .card-title { text-wrap: balance; }
+p, .node-detail, .tile-copy, .info-box, .hero-sub, .callout, .subhead { max-width: 65ch; }
+.seg-item, .segmented-item, .view-btn, .bchip, .topnav-clear, .btn-tinted, .cl-more, .eis-pill { font-size: var(--t-subhead); }
+.title2, .title3 { font-family: var(--font-display); }
+
+/* ==========================================================================
+   StatTile: the number is the tile. Value first in the DOM, the display face
+   at 52 px (44 on the phone), the label 12 px caps below, an optional delta
+   line and a sparkline in the world accent only where real history exists.
+   The same row sits first under the header band on every tab, most important
+   number first. One style for every key number on every tab.
+   ========================================================================== */
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); margin-bottom: var(--space-6); }
+@media (max-width: 640px) { .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat-tile {
+  display: flex; flex-direction: column; justify-content: flex-start; gap: var(--space-1); min-width: 0;
+  padding: var(--space-4); border-radius: var(--radius-m); background: var(--card); color: var(--label);
+  text-decoration: none;
+}
+a.stat-tile:hover { background: color-mix(in srgb, var(--fill) 50%, var(--card)); }
+.stat-tile-value {
+  font: 700 52px / 1 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+  color: var(--label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.stat-tile.is-alert .stat-tile-value { color: var(--grade-overdue); }
+.stat-tile-label {
+  font: 600 var(--t-caption) / 16px var(--font-sans); text-transform: uppercase; letter-spacing: 0.06em; color: var(--label-2);
+}
+.stat-tile-delta { font: 400 var(--t-caption) / 16px var(--font-sans); color: var(--label-2); font-variant-numeric: tabular-nums; }
+.stat-tile .sparkline { display: block; width: 100%; height: 28px; margin-top: auto; overflow: visible; }
+.stat-tile .sparkline path { stroke: var(--accent); }
+@media (max-width: 640px) { .stat-tile-value { font-size: 44px; } }
+/* Snapshot strips keep the shared tile; they no longer draw a hairline grid. */
+.kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); background: none; border: 0; border-radius: 0; overflow: visible; }
+.kpi-strip .stat-tile { background: var(--card); }
+@media (max-width: 640px) { .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Claude keeps its unread number in the brand orange; every other alert reads as overdue. */
+:root[data-world='claude'] .stat-tile.is-alert .stat-tile-value { color: var(--orange); }
+/* A word in a value slot (a level title) sits smaller than a figure. */
+.stat-tile-value:not(:where([class*='num'])) { overflow-wrap: anywhere; }

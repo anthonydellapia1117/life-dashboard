@@ -3,7 +3,8 @@ import { completionsByDay, countNodes } from '../lib/progress';
 import { levelFor, momentumFrom, streakFrom, xpFor } from '../lib/game';
 import { gradeOf } from '../lib/grade';
 import type { ResolvedNode } from '../lib/live';
-import { ProgressBar, ProgressRing } from './Progress';
+import { ProgressBar } from './Progress';
+import { StatRow, StatTile } from './StatTile';
 
 /**
  * Progress over time - the part that makes finishing things feel like it adds
@@ -39,41 +40,24 @@ export function Momentum({ nodes, now, days = 28 }: { nodes: ResolvedNode[]; now
 
   return (
     <div className="momentum">
-      <section className="momentum-hero hero" aria-label="Streak">
-        <div className="hero-eyebrow">Days in a row</div>
-        <div className="hero-figure">{streak.current}</div>
-        <div className="hero-sub">
-          {everFinished
-            ? `Longest ${streak.longest}. ${momentum.thisWeek} done this week, ${momentum.lastWeek} the week before.`
-            : 'Check something off and this starts counting.'}
-        </div>
-      </section>
-
-      <div className="momentum-grid">
-        <section className="momentum-card" aria-label="Level">
-          <ProgressRing counts={{ total: 100, done: level.pct, left: 100 - level.pct, pct: level.pct }} size={84} />
-          <div className="momentum-card-body">
-            <div className="momentum-card-value">Level {level.level}</div>
-            <div className="momentum-card-label">{level.title}</div>
-            <div className="momentum-card-sub">
-              {level.xpIntoLevel} of {level.xpForNextLevel} to the next one
-            </div>
-          </div>
-        </section>
-
-        <section className="momentum-card" aria-label="Trend">
-          <div className="momentum-card-body">
-            <div className="momentum-card-value">
-              {momentum.delta > 0 ? '+' : ''}
-              {momentum.delta}
-            </div>
-            <div className="momentum-card-label">
-              {momentum.trend === 'up' ? 'Ahead of last week' : momentum.trend === 'down' ? 'Behind last week' : 'Level with last week'}
-            </div>
-            <div className="momentum-card-sub">Seven days against the seven before.</div>
-          </div>
-        </section>
-      </div>
+      <StatRow label="Momentum">
+        <StatTile
+          label="Days in a row"
+          value={streak.current}
+          delta={everFinished ? `Longest ${streak.longest}` : 'Check something off to start'}
+        />
+        <StatTile
+          label="Done this week"
+          value={momentum.thisWeek}
+          delta={`${momentum.delta > 0 ? '+' : ''}${momentum.delta} vs last week`}
+          series={history.slice(-12).map((d) => d.count)}
+        />
+        <StatTile
+          label={`Level ${level.level}`}
+          value={level.title}
+          delta={`${level.xpIntoLevel} of ${level.xpForNextLevel} XP to the next one`}
+        />
+      </StatRow>
 
       <section aria-label="Last four weeks">
         <h3 className="section-heading">Last {days} days</h3>

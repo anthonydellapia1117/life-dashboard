@@ -1,3 +1,4 @@
+import { StatTile } from '../components/StatTile';
 import { useMemo, useState } from 'react';
 import type { LifeData } from '../types';
 import type { ResolvedNode } from '../lib/live';
@@ -95,18 +96,9 @@ export function LifeOsTab({ data, nodes, now }: { data: LifeData; nodes: Resolve
   return (
     <div className="tab-page lifeos-page">
       <section className="glance" aria-label="Today at a glance">
-        <a className="glance-kpi" href="#today">
-          <span className="glance-kpi-label">Open</span>
-          <span className="glance-kpi-value">{kpis.open}</span>
-        </a>
-        <a className="glance-kpi" href="#today">
-          <span className="glance-kpi-label">Due this week</span>
-          <span className="glance-kpi-value">{kpis.dueThisWeek}</span>
-        </a>
-        <a className="glance-kpi" href="#today">
-          <span className="glance-kpi-label">Overdue</span>
-          <span className={`glance-kpi-value${kpis.overdue > 0 ? ' is-alert' : ''}`}>{kpis.overdue}</span>
-        </a>
+        <StatTile label="Overdue" value={kpis.overdue} alert={kpis.overdue > 0} href="#today" />
+        <StatTile label="Due this week" value={kpis.dueThisWeek} href="#today" />
+        <StatTile label="Open" value={kpis.open} href="#today" />
         <div className="glance-cal group">
           {upcoming.length === 0 ? <p className="empty">No calendar items ahead.</p> : null}
           {upcoming.map((u) => (

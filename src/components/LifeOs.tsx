@@ -1,3 +1,4 @@
+import { StatRow, StatTile } from './StatTile';
 import { useMemo, useState } from 'react';
 import { BUCKETS, bucketMeta, bucketOf, countByBucket } from '../lib/bucket';
 import { useBucketFilter } from '../lib/filter';
@@ -64,20 +65,11 @@ export function LifeOs({
 
   return (
     <div className="lifeos">
-      <section className="eis-kpis" aria-label="Key numbers">
-        <div className="eis-kpi">
-          <span className="eis-kpi-label">Open</span>
-          <span className="eis-kpi-value">{kpis.open}</span>
-        </div>
-        <div className="eis-kpi">
-          <span className="eis-kpi-label">Due this week</span>
-          <span className="eis-kpi-value">{kpis.dueThisWeek}</span>
-        </div>
-        <div className="eis-kpi">
-          <span className="eis-kpi-label">Overdue</span>
-          <span className="eis-kpi-value">{kpis.overdue}</span>
-        </div>
-      </section>
+      <StatRow label="Key numbers">
+        <StatTile label="Overdue" value={kpis.overdue} alert={kpis.overdue > 0} />
+        <StatTile label="Due this week" value={kpis.dueThisWeek} />
+        <StatTile label="Open" value={kpis.open} />
+      </StatRow>
 
       <div className="eis-pills" role="group" aria-label="Filter by bucket">
         {BUCKETS.map((b) => (
