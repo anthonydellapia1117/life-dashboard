@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { LifeData } from '../types';
 import { computeAreaBreakdown, computeBalanceTotals } from '../lib/balance';
 import { groupUpcoming } from '../lib/grouping';
@@ -12,6 +12,7 @@ import { Balance } from '../components/Balance';
 import { Capture } from '../components/Capture';
 import { Disclosure } from '../components/Disclosure';
 import { KpiStrip } from '../components/KpiStrip';
+import { LifeOs } from '../components/LifeOs';
 import { NodeList } from '../components/NodeRow';
 import { GradeDistribution, ProgressBar } from '../components/Progress';
 
@@ -47,6 +48,9 @@ export function Today({
   onOpen: (id: string) => void;
 }) {
   const calendar = data.calendar ?? [];
+  // Eisenhower is the default view; TLDR (5 per quadrant) is the default density.
+  const [view, setView] = useState<'matrix' | 'list'>('matrix');
+  const [showAll, setShowAll] = useState(false);
 
   // Actionable items only: a repo's visibility or a tool's row is reference,
   // not something you finish, and padding Today with those would bury the work.
@@ -82,8 +86,26 @@ export function Today({
     <div className="tab-page today-page">
       <Capture cryptoKey={cryptoKey} salt={salt} captureEmail={data.meta.captureEmail} />
 
+      <div className="view-bar" role="group" aria-label="View">
+        <button type="button" className="view-btn" aria-pressed={view === 'matrix'} onClick={() => setView('matrix')}>
+          Matrix
+        </button>
+        <button type="button" className="view-btn" aria-pressed={view === 'list'} onClick={() => setView('list')}>
+          List
+        </button>
+        {view === 'matrix' ? (
+          <button type="button" className="view-btn" onClick={() => setShowAll(!showAll)}>
+            {showAll ? 'Hide details' : 'Show all details'}
+          </button>
+        ) : null}
+      </div>
+
       <div className="today-grid">
         <div className="today-main">
+          {view === 'matrix' ? (
+            <LifeOs nodes={actionable} now={now} onOpen={onOpen} showAll={showAll} />
+          ) : (
+          <>
           <section className="hero" aria-label="Summary">
             <div className="hero-eyebrow">To do now</div>
             <div className="hero-figure">{pressing}</div>
@@ -128,6 +150,8 @@ export function Today({
               <NodeList nodes={done} now={now} onToggle={live.toggleDone} onOpen={onOpen} />
             </Disclosure>
           ) : null}
+          </>
+          )}
         </div>
 
         <div className="today-side">

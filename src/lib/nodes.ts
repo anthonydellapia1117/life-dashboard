@@ -78,6 +78,11 @@ export interface LifeNode {
   baseDone: boolean;
   /** Numeric figure carried by the row (Account.balance, PaymentRow.amount), when present. */
   amount?: number;
+  /** Explicit Life OS bucket 1-6 from the row; absent means inferred by src/lib/bucket.ts. */
+  bucket?: number;
+  /** Eisenhower flags from the row. */
+  urgent?: boolean;
+  important?: boolean;
 }
 
 /** Where a slice's nodes live in the 4-zone IA, and the fallback area word for rows that carry none of their own. */
@@ -132,6 +137,9 @@ interface NodeFields {
   pill?: string;
   baseDone?: boolean;
   amount?: number;
+  bucket?: number;
+  urgent?: boolean;
+  important?: boolean;
 }
 
 function makeNode(
@@ -159,6 +167,9 @@ function makeNode(
     pill: fields.pill,
     baseDone: fields.baseDone ?? false,
     amount: fields.amount,
+    bucket: fields.bucket,
+    urgent: fields.urgent,
+    important: fields.important,
   };
 }
 
@@ -178,6 +189,9 @@ function fromActionItem(source: string, place: Place) {
       due: toDue(item.due),
       horizon: item.horizon,
       track: item.track,
+      bucket: item.bucket,
+      urgent: item.urgent,
+      important: item.important,
     });
 }
 

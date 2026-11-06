@@ -59,6 +59,9 @@
   --grade-next-week: #2563eb;
   --grade-later: #766c61; --grade-someday: #a69c90;
   --grade-done: #0a9410;
+  /* Life OS buckets (src/lib/bucket.ts). Categorical, separate from the grade ramp; a bucket is always named in words beside its colour. */
+  --bucket-1: #1f9a8a; --bucket-2: #d14d7a; --bucket-3: #3f6fd8;
+  --bucket-4: #2f9e55; --bucket-5: #c48a1f; --bucket-6: #7a4fb8;
   --nav-size: 56px;
   color-scheme: light;
 }
@@ -77,6 +80,8 @@
     --grade-next-week: #5b90f0;
     --grade-later: #8a8a8a; --grade-someday: #6d6d6d;
     --grade-done: #3fae5c;
+    --bucket-1: #4cc9c0; --bucket-2: #ff86ad; --bucket-3: #8fa8ff;
+    --bucket-4: #6fd895; --bucket-5: #e8b54a; --bucket-6: #b08ae8;
     color-scheme: dark;
   }
 }
@@ -89,6 +94,12 @@
 .grade-later { --grade: var(--grade-later); }
 .grade-someday { --grade: var(--grade-someday); }
 .grade-done { --grade: var(--grade-done); }
+.bucket-1 { --bucket: var(--bucket-1); }
+.bucket-2 { --bucket: var(--bucket-2); }
+.bucket-3 { --bucket: var(--bucket-3); }
+.bucket-4 { --bucket: var(--bucket-4); }
+.bucket-5 { --bucket: var(--bucket-5); }
+.bucket-6 { --bucket: var(--bucket-6); }
 
 /* Reset / base - one typeface everywhere; tables use tabular digits, everything else proportional. */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -748,3 +759,37 @@ tr:last-child td { border-bottom: none; }
 
 /* Native checkboxes take the ink, not the platform blue, so they sit in the palette. */
 input[type='checkbox'] { accent-color: var(--accent); }
+
+/* Life OS view: KPI strip, bucket pills, Eisenhower 2x2, 7-day strip. Spacing and type use the existing tokens. */
+.lifeos { display: flex; flex-direction: column; gap: var(--space-4); }
+.eis-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.eis-kpi { background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow-item); border-radius: var(--radius-item); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-1); }
+.eis-kpi-label { font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-2); }
+.eis-kpi-value { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); font-size: var(--text-xl-size); line-height: var(--text-xl-line); font-variant-numeric: tabular-nums; }
+.eis-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.eis-pill { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-3); border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); font: inherit; font-size: var(--text-xs-size); cursor: pointer; }
+.eis-pill-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bucket); }
+.eis-pill-count { font-variant-numeric: tabular-nums; color: var(--text-2); font-weight: 700; }
+.eis-pill.is-on { border-color: var(--bucket); box-shadow: inset 0 0 0 1px var(--bucket); background: var(--surface-2); }
+.eis-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
+@media (min-width: 720px) { .eis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.eis-quad { background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow-card); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.eis-quad-title { font-size: var(--text-base-size); line-height: var(--text-base-line); font-weight: 800; }
+.eis-quad-count { font-variant-numeric: tabular-nums; color: var(--text-2); font-weight: 600; margin-left: var(--space-1); }
+.eis-quad-caption { font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-3); }
+.eis-quad-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.eis-chip { display: flex; flex-direction: column; gap: var(--space-1); text-align: left; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 0; border-left: 4px solid var(--bucket); border-radius: var(--radius-control); background: var(--surface-2); color: var(--text-1); font: inherit; cursor: pointer; }
+.eis-chip-title { font-size: var(--text-xs-size); line-height: var(--text-xs-line); font-weight: 700; overflow-wrap: anywhere; }
+.eis-chip-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.eis-chip-bucket { font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-2); }
+.eis-more { align-self: flex-start; min-height: 44px; padding: 0 var(--space-2); background: none; border: 0; color: var(--accent); font: inherit; font-size: var(--text-xs-size); font-weight: 700; text-decoration: underline; cursor: pointer; }
+.eis-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
+.eis-day { background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow-item); border-radius: var(--radius-control); padding: var(--space-2); min-height: 88px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.eis-day.is-today { outline: 2px solid var(--accent); }
+.eis-day-head { display: flex; justify-content: space-between; font-size: var(--text-xs-size); line-height: var(--text-xs-line); color: var(--text-2); }
+.eis-day-num { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--text-1); }
+.eis-event { border-left: 3px solid var(--bucket); padding-left: var(--space-1); font-size: var(--text-xs-size); line-height: var(--text-xs-line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 600px) { .eis-strip { grid-template-columns: 1fr; } .eis-day { min-height: 0; } }
+.view-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: space-between; align-items: center; }
+.view-btn { min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-1); font: inherit; font-size: var(--text-xs-size); font-weight: 700; cursor: pointer; }
+.view-btn[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }

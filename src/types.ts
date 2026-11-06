@@ -71,6 +71,12 @@ export interface ActionItem {
   due?: string;
   /** Whose move it is. Absent means yours. Never a statement about timing. */
   track?: Track;
+  /** Life OS bucket 1-6. Absent means inferred (src/lib/bucket.ts). */
+  bucket?: number;
+  /** Flag for the Eisenhower view: counts as urgent whatever the date says. */
+  urgent?: boolean;
+  /** Flag for the Eisenhower view: counts as important. */
+  important?: boolean;
 }
 
 export type CalendarStatus = 'done' | 'active' | 'urgent' | 'warning' | 'upcoming';
