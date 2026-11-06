@@ -1,5 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildGraph, layout, neighbours, type GraphNode } from '../lib/graph';
+import { fitTransform } from '../lib/fit';
+import { textWidth } from '../lib/webLayout';
+import { ViewControls } from './ViewControls';
 import { GRADE_META, gradeClass, gradeOf } from '../lib/grade';
 import { bucketOf } from '../lib/bucket';
 import type { ResolvedNode } from '../lib/live';
@@ -25,11 +28,42 @@ import { GradeChip } from './GradeIcon';
 
 const ZOOM_MIN = 0.35;
 const ZOOM_MAX = 3;
+const ZOOM_STEP = 1.25;
+const FIT_PAD = 40;
 
 interface View {
   x: number;
   y: number;
   k: number;
+}
+
+/**
+ * The view that shows every node and its label, in the brain's own centre-based
+ * transform: translate(W/2, H/2) scale(k) translate(x - W/2, y - H/2).
+ */
+function fitView(nodes: GraphNode[], width: number, height: number): View {
+  if (nodes.length === 0) return { x: 0, y: 0, k: 1 };
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const n of nodes) {
+    const r = radiusFor(n);
+    const half = n.tier === 'item' ? r : Math.max(r, textWidth(n.label, 12, true) / 2);
+    x0 = Math.min(x0, n.x - half);
+    x1 = Math.max(x1, n.x + half);
+    y0 = Math.min(y0, n.y - r - (n.tier === 'item' ? 0 : 20));
+    y1 = Math.max(y1, n.y + r);
+  }
+  const t = fitTransform({ x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, { width, height }, FIT_PAD, {
+    min: ZOOM_MIN,
+    max: ZOOM_MAX,
+  });
+  return {
+    k: t.k,
+    x: (t.x - width / 2) / t.k + width / 2,
+    y: (t.y - height / 2) / t.k + height / 2,
+  };
 }
 
 function radiusFor(node: GraphNode): number {
@@ -39,15 +73,7 @@ function radiusFor(node: GraphNode): number {
   return 4.5;
 }
 
-export function Brain({
-  nodes,
-  now,
-  onOpen,
-}: {
-  nodes: ResolvedNode[];
-  now: Date;
-  onOpen: (id: string) => void;
-}) {
+export function Brain({ nodes, now, onOpen }: { nodes: ResolvedNode[]; now: Date; onOpen: (id: string) => void }) {
   const [selected, setSelected] = useState<string | undefined>();
   const [view, setView] = useState<View>({ x: 0, y: 0, k: 1 });
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -57,6 +83,9 @@ export function Brain({
   const graph = useMemo(() => buildGraph(nodes), [nodes]);
   const placed = useMemo(() => layout(graph, { width: 900, height: 900 }), [graph]);
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
+  const fitted = useMemo(() => fitView(placed.nodes, placed.width, placed.height), [placed]);
+  // Start fitted, and refit when the graph itself changes.
+  useEffect(() => setView(fitted), [fitted]);
 
   const lit = useMemo(() => {
     if (!selected) return undefined;
@@ -116,7 +145,9 @@ export function Brain({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        <g transform={`translate(${placed.width / 2} ${placed.height / 2}) scale(${view.k}) translate(${view.x - placed.width / 2} ${view.y - placed.height / 2})`}>
+        <g
+          transform={`translate(${placed.width / 2} ${placed.height / 2}) scale(${view.k}) translate(${view.x - placed.width / 2} ${view.y - placed.height / 2})`}
+        >
           <g className="brain-links">
             {placed.links.map((link) => {
               const a = placed.nodes.find((n) => n.id === link.source);
@@ -174,25 +205,16 @@ export function Brain({
       </svg>
 
       <div className="brain-bar">
-        <button type="button" className="btn btn-quiet" onClick={() => setView({ x: 0, y: 0, k: 1 })}>
-          Reset view
-        </button>
-        <button
-          type="button"
-          className="btn btn-quiet"
-          onClick={() => setView((v) => ({ ...v, k: Math.max(ZOOM_MIN, v.k - 0.25) }))}
-          aria-label="Zoom out"
+        <ViewControls
+          onZoomOut={() => setView((v) => ({ ...v, k: Math.max(ZOOM_MIN, v.k / ZOOM_STEP) }))}
+          onFit={() => setView(fitted)}
+          onZoomIn={() => setView((v) => ({ ...v, k: Math.min(ZOOM_MAX, v.k * ZOOM_STEP) }))}
+          zoomLabel={`${Math.round(view.k * 100)}%`}
         >
-          Zoom out
-        </button>
-        <button
-          type="button"
-          className="btn btn-quiet"
-          onClick={() => setView((v) => ({ ...v, k: Math.min(ZOOM_MAX, v.k + 0.25) }))}
-          aria-label="Zoom in"
-        >
-          Zoom in
-        </button>
+          <button type="button" className="btn-tinted" onClick={() => setView({ x: 0, y: 0, k: 1 })}>
+            Reset view
+          </button>
+        </ViewControls>
         <span className="brain-stat">
           {placed.nodes.length} nodes, {placed.links.length} links
         </span>
@@ -209,7 +231,16 @@ export function Brain({
           {selectedNode ? (
             <>
               <p className="brain-detail-meta">
-                <GradeChip grade={gradeOf({ due: selectedNode.due, horizon: selectedNode.horizon, done: selectedNode.done }, now)} />
+                <GradeChip
+                  grade={gradeOf(
+                    {
+                      due: selectedNode.due,
+                      horizon: selectedNode.horizon,
+                      done: selectedNode.done,
+                    },
+                    now,
+                  )}
+                />
                 <span className="node-area">{selectedNode.area}</span>
               </p>
               {selectedNode.detail ? <p className="brain-detail-body">{selectedNode.detail}</p> : null}
@@ -219,14 +250,15 @@ export function Brain({
             </>
           ) : (
             <p className="brain-detail-meta">
-              {selectedGraph.degree} connection{selectedGraph.degree === 1 ? '' : 's'}
+              {selectedGraph.degree} connection
+              {selectedGraph.degree === 1 ? '' : 's'}
             </p>
           )}
         </div>
       ) : (
         <p className="caption">
-          Tap a dot to light up what it touches. Drag to move, pinch to zoom. Colour is when something is due, not what
-          it is: {GRADE_META.overdue.label.toLowerCase()} and {GRADE_META.today.label.toLowerCase()} are red.
+          Tap a dot to light up what it touches. Drag to move, pinch to zoom. Colour is when something is due, not what it is:{' '}
+          {GRADE_META.overdue.label.toLowerCase()} and {GRADE_META.today.label.toLowerCase()} are red.
         </p>
       )}
     </div>

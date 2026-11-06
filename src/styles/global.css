@@ -603,8 +603,11 @@ tr:last-child td { border-bottom: none; }
   /* Snap lands on the scroll edge, not the padding edge, unless told otherwise - without this the first column sits flush on the glass. */
   scroll-padding-inline: var(--space-4);
 }
+.board-wrap { display: flex; flex-direction: column; gap: var(--space-3); }
+.board { --map-zoom: 1; }
+.board-head, .board-items { zoom: var(--map-zoom); }
 .board-col {
-  flex: 0 0 78%; max-width: 300px; scroll-snap-align: start;
+  flex: 0 0 calc(78% * var(--map-zoom)); max-width: calc(300px * var(--map-zoom)); scroll-snap-align: start;
   /* The grade strip is a painted band, not an inset shadow: an inset shadow on a rounded box leaves a coloured hairline down every edge. */
   background: linear-gradient(var(--grade), var(--grade)) top / 100% 3px no-repeat, var(--surface-2);
   border: none; border-radius: var(--radius-card); padding: var(--space-3);
@@ -630,7 +633,7 @@ tr:last-child td { border-bottom: none; }
 .bcard-done .bcard-check { color: var(--good); }
 @media (min-width: 768px) {
   .board { flex-wrap: nowrap; margin-inline: 0; padding-inline: 0; }
-  .board-col { flex: 1 1 0; min-width: 160px; }
+  .board-col { flex: 1 1 0; min-width: calc(160px * var(--map-zoom)); max-width: none; }
 }
 
 /* Roadmap - months down the page on phone, an area grid when there is room. */
